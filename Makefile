@@ -40,8 +40,8 @@ prep:
 	pip install --upgrade pip
 	pip uninstall requests-adal-auth -y
 	pip install --upgrade pip-tools
-	pip install -r test_requirements.txt
-	pip install -r requirements.txt
+	pip install -r test_requirements.in
+	pip install -r requirements.in
 
 build:
 	@echo "Building"
