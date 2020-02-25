@@ -23,8 +23,14 @@ code-quality:
 test:
 	@echo "Testing"
 
+pack:
+	@echo "Packaging"
+	python setup.py sdist bdist_wheel
+	ls -halt dist/
+
 push:
 	@echo "Pushing"
+	twine upload dist/* --verbose
 
 help:
 	@echo "#############################################"
@@ -37,6 +43,7 @@ help:
 	@echo " + make code-quality     Run code quality tools"
 	@echo " + make build            Build the package."
 	@echo " + make tests            Run tests."
+	@echo " + make pack             Package the build into a Pypi package"
 	@echo " + make push             Push the package to Pypi"
 
 
