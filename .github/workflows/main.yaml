@@ -9,10 +9,7 @@ on:
       - master
 
 env:
-  DOCKER_REGISTRY: ${{secrets.DOCKER_REGISTRY}}
-  DOCKER_USERNAME: ${{secrets.DOCKER_USERNAME}}
-  DOCKER_PASSWORD: ${{secrets.DOCKER_PASSWORD}}
-  DOCKER_REPO: ${{secrets.DOCKER_REPO}}
+  TWINE_TOKEN: ${{secrets.TWINE_TOKEN}}
 
 jobs:
   test:
@@ -47,10 +44,22 @@ jobs:
   upload:
     runs-on: ubuntu-latest
     steps:
+    - name: Check out code
+      uses: actions/checkout@v1
     - name: Set up Python
       uses: actions/setup-python@v1
       with:
-        python-version: 3.7
+        python-version: 3,7
+    - name: List environment info
+      run: |
+        python -c "import sys; print(sys.version)"
+        make info
+    - name: Prepare environment
+      run: |
+        make prep
+    - name: Ensure code quality
+      run: |
+        make code-quality
     - name: Build code
       run: |
         make build
