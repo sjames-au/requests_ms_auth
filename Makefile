@@ -63,18 +63,18 @@ pack:
 
 push:
 	@echo "Pushing"
-	echo "$$twine_config" >> 'twine.conf'
+	echo "$$twine_config" > 'twine.conf'
 	twine upload --config-file twine.conf dist/*.tar.gz --skip-existing --verbose
 	rm 'twine.conf'
 
 
 help:
 	@echo ""
-	@echo "#############################################"
-	@echo ""
-	@echo " General targets:"
+	@echo " Targets:"
 	@echo ""
 	@echo " + make help             Show this help"
+	@echo " + make info             Show environment info"
+	@echo " + make require          Update requirements pinning"
 	@echo " + make code-quality     Run code quality tools"
 	@echo " + make build            Build the package."
 	@echo " + make test             Run tests."
