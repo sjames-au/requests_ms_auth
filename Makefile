@@ -37,6 +37,7 @@ require:
 
 prep:
 	@echo "Prepare development environment"
+	pip install -r test_requirements.txt
 	pip install -r requirements.txt
 
 build:
