@@ -1,0 +1,31 @@
+name: requests-adal-auth
+
+on:
+  push:
+    branches:
+      - master
+  pull_request:
+    branches:
+      - master
+
+env:
+  DOCKER_REGISTRY: ${{secrets.DOCKER_REGISTRY}}
+  DOCKER_USERNAME: ${{secrets.DOCKER_USERNAME}}
+  DOCKER_PASSWORD: ${{secrets.DOCKER_PASSWORD}}
+  DOCKER_REPO: ${{secrets.DOCKER_REPO}}
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v1
+    - name: List environment info
+      run: |
+        make show-env
+        make info
+    - name: Build new package
+      run: |
+        make build
+    - name: Push version to PyPi
+      run: |
+        make push
