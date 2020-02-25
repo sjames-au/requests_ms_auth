@@ -15,7 +15,7 @@ env:
   DOCKER_REPO: ${{secrets.DOCKER_REPO}}
 
 jobs:
-  build:
+  test:
     runs-on: ubuntu-latest
     strategy:
       matrix:
@@ -44,6 +44,13 @@ jobs:
     - name: Test code
       run: |
         make setup test
+  upload:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Set up Python
+      uses: actions/setup-python@v1
+      with:
+        python-version: 3.7
     - name: Build code
       run: |
         make build
