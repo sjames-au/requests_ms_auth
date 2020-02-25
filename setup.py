@@ -1,15 +1,60 @@
+#!/usr/bin/env python
+
+import os
 from setuptools import setup, find_packages
 
+import logging
+
+logger = logging.getLogger(__name__)
+
+setup_requirements = ["pytest-runner", "setuptools_scm"]
+
+
 version=open('VERSION').read().strip()
+
+
+
+def remove_comment(line, sep="#"):
+    i = line.find(sep)
+    if i >= 0:
+        line = line[:i]
+    return line.strip()
+
+
+def read_requirements_file(fname: str):
+    fn = os.path.join(os.path.dirname(os.path.abspath(__file__)), fname)
+    print(f"Reading requirements from {fn}")
+    lines = []
+    with open(fn) as f:
+        for r in f.readlines():
+            r = r.strip()
+            if len(r) < 1:
+                continue
+            r = remove_comment(r)
+            if len(r) < 1:
+                continue
+            lines.append(r)
+    return lines
+
+
+
 
 setup(
     name='requests-adal-auth',
     version=version,
     packages=find_packages(exclude=['tests*']),
+    setup_requires=setup_requirements,
     license='AGPL-3.0',
     description='Python requests session with support for oauth and adal',
     long_description=open('README.md').read(),
-    install_requires=['requests-adal-auth'],
+    install_requires=read_requirements_file(
+        "requirements.in"
+    ),  # Allow flexible deps for install
+    tests_require=read_requirements_file(
+        "test_requirements.txt"
+    ),  # Use rigid deps for testing
+    test_suite="tests",
+    python_requires=">=3.4.0",
     url='https://github.com/equinor/requests-adal-auth',
     download_url=f"https://github.com/equinor/requests-adal-auth/dist/requests-adal-auth-{version}.tar.gz",
     author='Lennart Rolland',

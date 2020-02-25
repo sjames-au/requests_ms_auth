@@ -19,18 +19,22 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v1
+    - uses: yaananth/twine-upload@v1
     - name: List environment info
       run: |
         make info
-    - name: Code quality
+    - name: Ensure code quality
       run: |
         make code-quality
-    - name: Test
+    - name: Test code
       run: |
         make test
-    - name: Build new package
+    - name: Build code
       run: |
         make build
+    - name: Package for PyPi
+      run: |
+        make pack
     - name: Push version to PyPi
       run: |
         make push

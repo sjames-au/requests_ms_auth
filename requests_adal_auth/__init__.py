@@ -1,3 +1,3 @@
 from . import AdalRequestsSession
 
-__all__=['AdalRequestsSession']
+__all__ = ["AdalRequestsSession"]
