@@ -37,6 +37,9 @@ require:
 
 prep:
 	@echo "Prepare development environment"
+	pip install --upgrade pip
+	pip uninstall requests-adal-auth -y
+	pip install --upgrade pip-tools
 	pip install -r test_requirements.txt
 	pip install -r requirements.txt
 
