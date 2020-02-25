@@ -5,5 +5,5 @@ pytest~=4.6
 pytest-mypy~=0.3
 pytest-flakes~=4.0
 pip-tools~=4.0
-black>=19.0
+black
 mock~=3.0
