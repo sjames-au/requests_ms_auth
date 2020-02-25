@@ -90,7 +90,7 @@ help:
 	@echo " + make info             Show environment info"
 	@echo " + make require          Update requirements pinning"
 	@echo " + make prep             Prepare development environment"
-	@echo " + make setup            Instal local verion of package"
+	@echo " + make setup            Install local verion of package"
 	@echo " + make code-quality     Run code quality tools"
 	@echo " + make build            Build the package."
 	@echo " + make test             Run tests."

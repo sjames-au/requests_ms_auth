@@ -43,7 +43,7 @@ jobs:
         make code-quality
     - name: Test code
       run: |
-        make test
+        make setup test
     - name: Build code
       run: |
         make build
