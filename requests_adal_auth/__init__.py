@@ -1,3 +1,3 @@
-from . import AdalRequestsSession
+from .session import AdalRequestsSession
 
 __all__ = ["AdalRequestsSession"]

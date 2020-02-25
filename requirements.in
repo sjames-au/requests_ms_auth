@@ -1,7 +1,6 @@
 adal~=1.2
 requests>=2.0.0
 requests_oauthlib~=1.2.0
-setuptools~=41.0.0
 
 
 

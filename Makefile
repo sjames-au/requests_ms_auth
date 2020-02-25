@@ -25,7 +25,7 @@ info:
 
 require:
 	pip install --upgrade pip
-	pip uninstall requests-adal-auth -y
+	pip uninstall requests_adal_auth -y
 	pip install --upgrade pip-tools
 	cat requirements.in | sort -u > r.in
 	pip-compile --output-file=requirements.txt r.in
@@ -38,7 +38,7 @@ require:
 prep:
 	@echo "Prepare development environment"
 	pip install --upgrade pip
-	pip uninstall requests-adal-auth -y
+	pip uninstall requests_adal_auth -y
 	pip install --upgrade pip-tools
 	pip install -r test_requirements.in
 	pip install -r requirements.in
@@ -47,18 +47,25 @@ build:
 	@echo "Building"
 
 black:
+	@echo "Ensuring code quality with black"
 	black -l 88 -t py37 "${PACKAGE_DIR}"
 	black -l 88 -t py37 "${TESTS_DIR}"
 
 flake:
+	@echo "Ensuring code quality with flake"
 	flake8 --ignore=E731,W503,W504,E501,E265,C0301,W1202,W1203 --max-complexity 10 --exclude build,junk --exit-zero "${PACKAGE_DIR}"
 
 mypy:
+	@echo "Ensuring code quality with mypy"
 	mypy --ignore-missing-imports "${PACKAGE_DIR}"
 	mypy --ignore-missing-imports "${TESTS_DIR}"
 
+setup:
+	rm -rf requests_adal_auth/build
+	pip uninstall -y requests_adal_auth
+	pip install .
+
 code-quality: black flake mypy
-	@echo "Code Quality"
 
 test:
 	@echo "Testing"
@@ -75,7 +82,6 @@ push:
 	twine upload --config-file twine.conf dist/*.tar.gz --skip-existing --verbose
 	rm 'twine.conf'
 
-
 help:
 	@echo ""
 	@echo " Targets:"
@@ -84,6 +90,7 @@ help:
 	@echo " + make info             Show environment info"
 	@echo " + make require          Update requirements pinning"
 	@echo " + make prep             Prepare development environment"
+	@echo " + make setup            Instal local verion of package"
 	@echo " + make code-quality     Run code quality tools"
 	@echo " + make build            Build the package."
 	@echo " + make test             Run tests."

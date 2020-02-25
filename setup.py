@@ -40,7 +40,7 @@ def read_requirements_file(fname: str):
 
 
 setup(
-    name='requests-adal-auth',
+    name='requests_adal_auth',
     version=version,
     packages=find_packages(exclude=['tests*']),
     setup_requires=setup_requirements,
@@ -55,8 +55,8 @@ setup(
     ),  # Use rigid deps for testing
     test_suite="tests",
     python_requires=">=3.4.0",
-    url='https://github.com/equinor/requests-adal-auth',
-    download_url=f"https://github.com/equinor/requests-adal-auth/dist/requests-adal-auth-{version}.tar.gz",
+    url='https://github.com/equinor/requests_adal_auth',
+    download_url=f"https://github.com/equinor/requests_adal_auth/dist/requests_adal_auth-{version}.tar.gz",
     author='Lennart Rolland',
     author_email='lennartrolland@gmail.com',
     classifiers=[

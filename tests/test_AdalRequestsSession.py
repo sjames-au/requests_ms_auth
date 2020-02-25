@@ -1,5 +1,5 @@
-from requests_adal_auth import AdalRequestsSession
-
+import requests_adal_auth
 
 def test_AdalRequestsSession():
-    instance = AdalRequestsSession()
+    session = requests_adal_auth.AdalRequestsSession({'test':'bob'})
+    session.get("https://equinor.com")
