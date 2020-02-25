@@ -13,7 +13,7 @@ password=${TWINE_TOKEN}
 endef
 export twine_config
 
-.PHONY: all info require build code-quality black flake mypy test pack push help
+.PHONY: all info require prep build code-quality black flake mypy test pack push help
 
 all: help
 
@@ -34,6 +34,10 @@ require:
 	[ ! -e r.in ] || rm r.in
 	pip install -r requirements.txt
 	pip install -r test_requirements.txt
+
+prep:
+	@echo "Prepare development environment"
+	pip install -r requirements.txt
 
 build:
 	@echo "Building"
@@ -75,6 +79,7 @@ help:
 	@echo " + make help             Show this help"
 	@echo " + make info             Show environment info"
 	@echo " + make require          Update requirements pinning"
+	@echo " + make prep             Prepare development environment"
 	@echo " + make code-quality     Run code quality tools"
 	@echo " + make build            Build the package."
 	@echo " + make test             Run tests."

@@ -22,6 +22,9 @@ jobs:
     - name: List environment info
       run: |
         make info
+    - name: Prepare environment
+      run: |
+        make prep
     - name: Ensure code quality
       run: |
         make code-quality
