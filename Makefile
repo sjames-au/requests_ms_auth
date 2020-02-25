@@ -39,7 +39,7 @@ prep:
 	@echo "Prepare development environment"
 	pip install --upgrade pip
 	pip uninstall requests_adal_auth -y
-	pip install --upgrade pip-tools
+	pip install --upgrade pip-tools wheel
 	pip install -r test_requirements.in
 	pip install -r requirements.in
 
