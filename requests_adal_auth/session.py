@@ -40,7 +40,8 @@ class AdalRequestsSession(requests_oauthlib.OAuth2Session):
             raise Exception('No tenant specified')
         self.raa_validate_authority = self.raa_tenant != "adfs"
         self.raa_scope = self.raa_auth_config.get("scope", ["read", "write"])
-        self.raa_redirect_uri = self.raa_auth_config.get("verification_url")
+        self.raa_verification_url = self.raa_auth_config.get("verification_url")
+        self.raa_redirect_uri = self.raa_auth_config.get("redirect_uri")
         if not self.raa_redirect_uri:
             raise Exception('No redirect_uri specified')
         self.raa_auto_refresh_url = (
@@ -52,11 +53,7 @@ class AdalRequestsSession(requests_oauthlib.OAuth2Session):
             "resource": self.raa_resource_uri,
         }  # aka extra
 
-    def __init__(
-        self, auth_config={},
-    ):
-        self._set_config(auth_config)
-        self.raa_state = None
+    def _setup(self):
         self.raa_token = self._fetch_access_token()
         if not self.raa_token:
             raise Exception('Could not generate token')
@@ -77,6 +74,13 @@ class AdalRequestsSession(requests_oauthlib.OAuth2Session):
             token=self.raa_token,
         )
         self.verify_auth()
+
+    def __init__(
+        self, auth_config={},
+    ):
+        self._set_config(auth_config)
+        self.raa_state = None
+        
 
     def _fetch_access_token(self):
         self.raa_adal_token = None
