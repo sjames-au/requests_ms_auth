@@ -3,7 +3,7 @@ import adal
 import logging
 import os
 import pytest
-import requests_adal_auth
+import requests_ms_auth
 import sys
 import typing
 import yaml
@@ -102,7 +102,7 @@ def todo_test_fetch_access_token_functioning_adal(
     )
 
     mock_auth_context.acquire_token_with_client_credentials.return_value = token
-    session = requests_adal_auth.AdalRequestsSession(auth_config)
+    session = requests_ms_auth.MsRequestsSession(auth_config)
     assert session._fetch_access_token() == expected_oath_token
 
 
@@ -127,8 +127,8 @@ def todo_test_fetch_access_token_malfunctioning_adal(
         fetch_access_token(auth_config)
 
 
-@mock.patch("requests_adal_auth.OAuth2Session", autospec=True)
-@mock.patch("requests_adal_auth.adal.AuthenticationContext", autospec=True)
+@mock.patch("requests_ms_auth.OAuth2Session", autospec=True)
+@mock.patch("requests_ms_auth.adal.AuthenticationContext", autospec=True)
 def todo_test_create_auth_session(
     MockAuthenticationContext, MockOAuth2Session, auth_config
 ):
@@ -157,8 +157,8 @@ def todo_test_create_auth_session(
     assert create_auth_session(auth_config) is None
 
 
-def todo_test_AdalRequestsSession(auth_config_live):
-    session = requests_adal_auth.AdalRequestsSession(auth_config_live)
+def todo_test_MsRequestsSession(auth_config_live):
+    session = requests_ms_auth.MsRequestsSession(auth_config_live)
     ok, message = session.verify_auth()
     assert ok
 

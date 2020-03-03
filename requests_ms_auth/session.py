@@ -10,7 +10,7 @@ import typing
 logger = logging.getLogger(__name__)
 
 
-class AdalRequestsSession(requests_oauthlib.OAuth2Session):
+class MsRequestsSession(requests_oauthlib.OAuth2Session):
 
     """
     A wrapper for OAuth2Session that also implements adal token fetch.
@@ -39,7 +39,7 @@ class AdalRequestsSession(requests_oauthlib.OAuth2Session):
         logging.debug(
             f"@@@ raa Session: __init__(client_id={self.raa_client_id}, auto_refresh_url={self.raa_auto_refresh_url}, scope={self.raa_scope})."
         )
-        super(AdalRequestsSession, self).__init__(
+        super(MsRequestsSession, self).__init__(
             client=self.raa_client, token=self.raa_token,
         )
         self.verify_auth()
@@ -204,7 +204,7 @@ class AdalRequestsSession(requests_oauthlib.OAuth2Session):
         logging.debug(
             f"@@@ raa Session: prepare_request(method={request.method}, url='{request.url}')."
         )
-        return super(AdalRequestsSession, self).prepare_request(request)
+        return super(MsRequestsSession, self).prepare_request(request)
 
     def request(
         self,
@@ -218,7 +218,7 @@ class AdalRequestsSession(requests_oauthlib.OAuth2Session):
         **kwargs,
     ):
         logging.info(f"@@@ raa Session: request(method={method}, url='{url}').")
-        return super(AdalRequestsSession, self).request(
+        return super(MsRequestsSession, self).request(
             method=method,
             url=url,
             data=data,
@@ -234,7 +234,7 @@ class AdalRequestsSession(requests_oauthlib.OAuth2Session):
             f"@@@ raa Session: send(method={request.method}, url='{request.url}')."
         )
         try:
-            response = super(AdalRequestsSession, self).send(request, **kwargs)
+            response = super(MsRequestsSession, self).send(request, **kwargs)
             logging.debug(
                 f"@@@ raa Session: Response head follows: -----------------------"
             )
@@ -255,4 +255,4 @@ class AdalRequestsSession(requests_oauthlib.OAuth2Session):
 
     def close(self):
         logging.debug(f"@@@ raa Session: close().")
-        return super(AdalRequestsSession, self).close()
+        return super(MsRequestsSession, self).close()

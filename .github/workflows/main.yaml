@@ -1,4 +1,4 @@
-name: requests_adal_auth
+name: requests_ms_auth
 
 on:
   push:
