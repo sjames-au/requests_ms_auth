@@ -1,4 +1,5 @@
 import adal
+import msal
 import logging
 import oauthlib.oauth2
 import pprint
@@ -47,6 +48,7 @@ class AdalRequestsSession(requests_oauthlib.OAuth2Session):
     def _set_config(self, auth_config):
         self.raa_auth_config = auth_config
         self.raa_client_id = self.raa_auth_config.get("client_id")
+        self.raa_do_adal = self.raa_auth_config.get("do_adal",False)
         if not self.raa_client_id:
             raise Exception("No client_id specified")
         self.raa_client_secret = self.raa_auth_config.get("client_secret")
@@ -79,6 +81,58 @@ class AdalRequestsSession(requests_oauthlib.OAuth2Session):
 
 
     def _fetch_access_token(self):
+        if self.raa_do_adal:
+            logger.info("NOTE: Doing ADAL")
+            self._fetch_access_token_adal()
+        else:
+            logger.info("NOTE: Doing MSAL")
+            self._fetch_access_token_msal()
+
+
+    def _fetch_access_token_msal(self):
+        self.raa_adal_token = None
+        self.raa_oathlib_token = None
+        try:
+            context = msal.ConfidentialClientApplication(
+                authority=self.raa_auto_refresh_url,
+                validate_authority=self.raa_validate_authority,
+                api_version=None,
+                client_id=self.raa_client_id,
+                client_credential=self.raa_client_secret,
+            )
+            self.raa_adal_token = (
+                context.acquire_token_for_client(
+                    scopes=[self.raa_resource_uri]
+                )
+                or {}
+            )
+            if self.raa_adal_token:
+                self.raa_oathlib_token = {
+                    "access_token": self.raa_adal_token.get("accessToken", ""),
+                    "refresh_token": self.raa_adal_token.get("refreshToken", ""),
+                    "token_type": self.raa_adal_token.get("tokenType", "Bearer"),
+                    "expires_in": self.raa_adal_token.get("expiresIn", 0),
+                }
+            else:
+                logger.error(
+                    f"Could not get token for client {self.raa_auto_refresh_url}"
+                )
+        except Exception as e:
+            logger.error(f"Error fetching token: {e}", exc_info=True)
+            logger.warning(
+                "NOTE:\n"
+                + f"client_id:            {self.raa_client_id}\n"
+                + f"client_secret:        [hidden]\n"
+                + f"tenant:               {self.raa_tenant}\n"
+                + f"validate_authority:   {self.raa_validate_authority}\n"
+                + f"authority_host_url:   {self.raa_authority_host_url}\n"
+                + f"auto_refresh_url:     {self.raa_auto_refresh_url}\n"
+            )
+            raise e
+        return self.raa_oathlib_token
+        
+    
+    def _fetch_access_token_adal(self):
         self.raa_adal_token = None
         self.raa_oathlib_token = None
         try:

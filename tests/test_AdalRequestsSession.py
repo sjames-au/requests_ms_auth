@@ -159,10 +159,8 @@ def todo_test_create_auth_session(
 
 def todo_test_AdalRequestsSession(auth_config_live):
     session = requests_adal_auth.AdalRequestsSession(auth_config_live)
-    #session.get("https://equinor.com")
     ok, message = session.verify_auth()
-    logger.warning(f"Status: {ok} ({message})")
-    assert not ok
+    assert ok
 
 
 def test_true():
