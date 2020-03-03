@@ -19,9 +19,7 @@ class MsRequestsSession(requests_oauthlib.OAuth2Session):
     See https://adal-python.readthedocs.io/en/latest/
     """
 
-    def __init__(
-        self, auth_config,
-    ):
+    def __init__(self, auth_config):
         self._set_config(auth_config)
         self.raa_state = None
         self.raa_token = self._fetch_access_token()
@@ -40,15 +38,14 @@ class MsRequestsSession(requests_oauthlib.OAuth2Session):
             f"@@@ raa Session: __init__(client_id={self.raa_client_id}, auto_refresh_url={self.raa_auto_refresh_url}, scope={self.raa_scope})."
         )
         super(MsRequestsSession, self).__init__(
-            client=self.raa_client, token=self.raa_token,
+            client=self.raa_client, token=self.raa_token
         )
         self.verify_auth()
-
 
     def _set_config(self, auth_config):
         self.raa_auth_config = auth_config
         self.raa_client_id = self.raa_auth_config.get("client_id")
-        self.raa_do_adal = self.raa_auth_config.get("do_adal",False)
+        self.raa_do_adal = self.raa_auth_config.get("do_adal", False)
         if not self.raa_client_id:
             raise Exception("No client_id specified")
         self.raa_client_secret = self.raa_auth_config.get("client_secret")
@@ -79,7 +76,6 @@ class MsRequestsSession(requests_oauthlib.OAuth2Session):
             "resource": self.raa_resource_uri,
         }  # aka extra
 
-
     def _fetch_access_token(self):
         if self.raa_do_adal:
             logger.info("NOTE: Doing ADAL")
@@ -87,7 +83,6 @@ class MsRequestsSession(requests_oauthlib.OAuth2Session):
         else:
             logger.info("NOTE: Doing MSAL")
             self._fetch_access_token_msal()
-
 
     def _fetch_access_token_msal(self):
         self.raa_adal_token = None
@@ -101,10 +96,7 @@ class MsRequestsSession(requests_oauthlib.OAuth2Session):
                 client_credential=self.raa_client_secret,
             )
             self.raa_adal_token = (
-                context.acquire_token_for_client(
-                    scopes=[self.raa_resource_uri]
-                )
-                or {}
+                context.acquire_token_for_client(scopes=[self.raa_resource_uri]) or {}
             )
             if self.raa_adal_token:
                 self.raa_oathlib_token = {
@@ -130,8 +122,7 @@ class MsRequestsSession(requests_oauthlib.OAuth2Session):
             )
             raise e
         return self.raa_oathlib_token
-        
-    
+
     def _fetch_access_token_adal(self):
         self.raa_adal_token = None
         self.raa_oathlib_token = None
@@ -143,7 +134,7 @@ class MsRequestsSession(requests_oauthlib.OAuth2Session):
             )
             self.raa_adal_token = (
                 context.acquire_token_with_client_credentials(
-                    self.raa_resource_uri, self.raa_client_id, self.raa_client_secret,
+                    self.raa_resource_uri, self.raa_client_id, self.raa_client_secret
                 )
                 or {}
             )

@@ -37,20 +37,23 @@ def load_yaml(filename):
             data = {}
         return data, failure
 
+
 @pytest.fixture
 def auth_config_live():
-    data, error=load_yaml('secrets.yaml')
+    data, error = load_yaml("secrets.yaml")
     if not data or error:
         raise Exception("Could not read secrets: {error}")
-    return data['auth']
-#{
-#"resource": "dummy-resource",
-#"tenant": "dummy-tenant",
-#"authority_host_url": "dummy-authority",
-#"client_id": "dummy-client",
-#"client_secret": "dummy-secret",
-#"verification_url": "https://bob.com",
-#}
+    return data["auth"]
+
+
+# {
+# "resource": "dummy-resource",
+# "tenant": "dummy-tenant",
+# "authority_host_url": "dummy-authority",
+# "client_id": "dummy-client",
+# "client_secret": "dummy-secret",
+# "verification_url": "https://bob.com",
+# }
 
 
 VALID_TOKEN: typing.Dict[str, typing.Union[str, int]] = {
