@@ -139,3 +139,7 @@ def todo_test_AdalRequestsSession():
         }
     )
     # session.get("https://equinor.com")
+
+
+def test_true():
+    assert True == True
