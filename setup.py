@@ -47,6 +47,7 @@ setup(
     license='AGPL-3.0',
     description='Python requests session for microsoft with support for oauth2, adal and msal',
     long_description=open('README.md').read(),
+    long_description_content_type="text/markdown",
     install_requires=read_requirements_file(
         "requirements.in"
     ),  # Allow flexible deps for install
