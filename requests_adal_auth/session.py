@@ -16,37 +16,41 @@ class AdalRequestsSession(requests_oauthlib.OAuth2Session):
     See https://requests.readthedocs.io/en/latest/_modules/requests/sessions/#Session
     See https://requests-oauthlib.readthedocs.io/en/latest/api.html#oauth-2-0-session
     """
-    
+
+    def __init__(
+        self, auth_config={},
+    ):
+        self._set_config(auth_config)
+        self.raa_state = None
+
     def _set_config(self, auth_config):
         self.raa_auth_config = auth_config
         self.raa_client_id = self.raa_auth_config.get("client_id")
         if not self.raa_client_id:
-            raise Exception('No client_id specified')
+            raise Exception("No client_id specified")
         self.raa_client_secret = self.raa_auth_config.get("client_secret")
         if not self.raa_client_secret:
-            raise Exception('No client_secret specified')
+            raise Exception("No client_secret specified")
         self.raa_resource_uri = self.raa_auth_config.get(
             "resource", "https://management.core.windows.net/"
         )
         if not self.raa_resource_uri:
-            raise Exception('No resource_uri specified')
+            raise Exception("No resource_uri specified")
         self.raa_authority_host_url = self.raa_auth_config.get(
             "authority_host_url", "https://login.microsoftonline.com"
         )
         if not self.raa_authority_host_url:
-            raise Exception('No authority_host_url specified')
+            raise Exception("No authority_host_url specified")
         self.raa_tenant = self.raa_auth_config.get("tenant", "adfs")
         if not self.raa_tenant:
-            raise Exception('No tenant specified')
+            raise Exception("No tenant specified")
         self.raa_validate_authority = self.raa_tenant != "adfs"
         self.raa_scope = self.raa_auth_config.get("scope", ["read", "write"])
         self.raa_verification_url = self.raa_auth_config.get("verification_url")
         self.raa_redirect_uri = self.raa_auth_config.get("redirect_uri")
         if not self.raa_redirect_uri:
-            raise Exception('No redirect_uri specified')
-        self.raa_auto_refresh_url = (
-            f"{self.raa_authority_host_url}/{self.raa_tenant}"
-        )
+            raise Exception("No redirect_uri specified")
+        self.raa_auto_refresh_url = f"{self.raa_authority_host_url}/{self.raa_tenant}"
         self.raa_auto_refresh_kwargs = {
             "client_id": self.raa_client_id,
             "client_secret": self.raa_client_secret,
@@ -56,7 +60,7 @@ class AdalRequestsSession(requests_oauthlib.OAuth2Session):
     def _setup(self):
         self.raa_token = self._fetch_access_token()
         if not self.raa_token:
-            raise Exception('Could not generate token')
+            raise Exception("Could not generate token")
         # client=requests_oauthlib.WebApplicationClient(client_id=self.raa_client_id, token=self.raa_token)
         self.raa_client = oauthlib.oauth2.BackendApplicationClient(
             client_id=self.raa_client_id,
@@ -70,17 +74,9 @@ class AdalRequestsSession(requests_oauthlib.OAuth2Session):
             f"@@@ raa Session: __init__(client_id={self.raa_client_id}, auto_refresh_url={self.raa_auto_refresh_url}, scope={self.raa_scope}, redirect_uri={self.raa_redirect_uri})."
         )
         super(AdalRequestsSession, self).__init__(
-            client=self.raa_client,
-            token=self.raa_token,
+            client=self.raa_client, token=self.raa_token,
         )
         self.verify_auth()
-
-    def __init__(
-        self, auth_config={},
-    ):
-        self._set_config(auth_config)
-        self.raa_state = None
-        
 
     def _fetch_access_token(self):
         self.raa_adal_token = None
