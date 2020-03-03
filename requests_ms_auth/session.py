@@ -9,20 +9,38 @@ import typing
 logger = logging.getLogger(__name__)
 
 
-class AdalRequestsSession(requests_oauthlib.OAuth2Session):
+class MsRequestsSession(requests_oauthlib.OAuth2Session):
 
     """
-    A wrapper for OAuth2Session that allows us to do debugging and adal refresh among other things.
+    A wrapper for OAuth2Session that also implements adal token fetch.
     See https://requests.readthedocs.io/en/latest/_modules/requests/sessions/#Session
     See https://requests-oauthlib.readthedocs.io/en/latest/api.html#oauth-2-0-session
+    See https://adal-python.readthedocs.io/en/latest/
     """
 
-    def __init__(
-        self, auth_config={},
-    ):
+    def __init__(self, auth_config):
+        self.aouth_header = 'Authorization'
         self._set_config(auth_config)
         self.raa_state = None
-        self.aouth_header = 'Authorization'
+        self.raa_token = self._fetch_access_token()
+        if not self.raa_token:
+            raise Exception("Could not generate token")
+        # client=requests_oauthlib.WebApplicationClient(client_id=self.raa_client_id, token=self.raa_token)
+        self.raa_client = oauthlib.oauth2.BackendApplicationClient(
+            client_id=self.raa_client_id,
+            token=self.raa_token,
+            auto_refresh_url=self.raa_auto_refresh_url,
+            auto_refresh_kwargs=self.raa_auto_refresh_kwargs,
+            token_updater=self._token_saver,
+            scope=self.raa_scope,
+        )
+        logging.debug(
+            f"@@@ raa Session: __init__(client_id={self.raa_client_id}, auto_refresh_url={self.raa_auto_refresh_url}, scope={self.raa_scope})."
+        )
+        super(MsRequestsSession, self).__init__(
+            client=self.raa_client, token=self.raa_token
+        )
+        self.verify_auth()
 
     def _set_config(self, auth_config):
         self.raa_auth_config = auth_config
@@ -58,28 +76,54 @@ class AdalRequestsSession(requests_oauthlib.OAuth2Session):
             "resource": self.raa_resource_uri,
         }  # aka extra
 
-    def _setup(self):
-        self.raa_token = self._fetch_access_token()
-        if not self.raa_token:
-            raise Exception("Could not generate token")
-        # client=requests_oauthlib.WebApplicationClient(client_id=self.raa_client_id, token=self.raa_token)
-        self.raa_client = oauthlib.oauth2.BackendApplicationClient(
-            client_id=self.raa_client_id,
-            token=self.raa_token,
-            auto_refresh_url=self.raa_auto_refresh_url,
-            auto_refresh_kwargs=self.raa_auto_refresh_kwargs,
-            token_updater=self._token_saver,
-            scope=self.raa_scope,
-        )
-        logging.debug(
-            f"@@@ raa Session: __init__(client_id={self.raa_client_id}, auto_refresh_url={self.raa_auto_refresh_url}, scope={self.raa_scope}, redirect_uri={self.raa_redirect_uri})."
-        )
-        super(AdalRequestsSession, self).__init__(
-            client=self.raa_client, token=self.raa_token,
-        )
-        self.verify_auth()
-
     def _fetch_access_token(self):
+        if self.raa_do_adal:
+            logger.info("NOTE: Doing ADAL")
+            self._fetch_access_token_adal()
+        else:
+            logger.info("NOTE: Doing MSAL")
+            self._fetch_access_token_msal()
+
+    def _fetch_access_token_msal(self):
+        self.raa_adal_token = None
+        self.raa_oathlib_token = None
+        try:
+            context = msal.ConfidentialClientApplication(
+                authority=self.raa_auto_refresh_url,
+                validate_authority=self.raa_validate_authority,
+                api_version=None,
+                client_id=self.raa_client_id,
+                client_credential=self.raa_client_secret,
+            )
+            self.raa_adal_token = (
+                context.acquire_token_for_client(scopes=[self.raa_resource_uri]) or {}
+            )
+            if self.raa_adal_token:
+                self.raa_oathlib_token = {
+                    "access_token": self.raa_adal_token.get("accessToken", ""),
+                    "refresh_token": self.raa_adal_token.get("refreshToken", ""),
+                    "token_type": self.raa_adal_token.get("tokenType", "Bearer"),
+                    "expires_in": self.raa_adal_token.get("expiresIn", 0),
+                }
+            else:
+                logger.error(
+                    f"Could not get token for client {self.raa_auto_refresh_url}"
+                )
+        except Exception as e:
+            logger.error(f"Error fetching token: {e}", exc_info=True)
+            logger.warning(
+                "NOTE:\n"
+                + f"client_id:            {self.raa_client_id}\n"
+                + f"client_secret:        [hidden]\n"
+                + f"tenant:               {self.raa_tenant}\n"
+                + f"validate_authority:   {self.raa_validate_authority}\n"
+                + f"authority_host_url:   {self.raa_authority_host_url}\n"
+                + f"auto_refresh_url:     {self.raa_auto_refresh_url}\n"
+            )
+            raise e
+        return self.raa_oathlib_token
+
+    def _fetch_access_token_adal(self):
         self.raa_adal_token = None
         self.raa_oathlib_token = None
         try:
@@ -215,4 +259,4 @@ class AdalRequestsSession(requests_oauthlib.OAuth2Session):
 
     def close(self):
         logging.debug(f"@@@ raa Session: close().")
-        return super(AdalRequestsSession, self).close()
+        return super(MsRequestsSession, self).close()

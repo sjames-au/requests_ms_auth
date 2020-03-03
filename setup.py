@@ -40,13 +40,14 @@ def read_requirements_file(fname: str):
 
 
 setup(
-    name='requests_adal_auth',
+    name='requests_ms_auth',
     version=version,
     packages=find_packages(exclude=['tests*']),
     setup_requires=setup_requirements,
     license='AGPL-3.0',
-    description='Python requests session with support for oauth and adal',
+    description='Python requests session for microsoft with support for oauth2, adal and msal',
     long_description=open('README.md').read(),
+    long_description_content_type="text/markdown",
     install_requires=read_requirements_file(
         "requirements.in"
     ),  # Allow flexible deps for install
@@ -55,8 +56,8 @@ setup(
     ),  # Use rigid deps for testing
     test_suite="tests",
     python_requires=">=3.4.0",
-    url='https://github.com/equinor/requests_adal_auth',
-    download_url=f"https://github.com/equinor/requests_adal_auth/dist/requests_adal_auth-{version}.tar.gz",
+    url='https://github.com/equinor/requests_ms_auth',
+    download_url=f"https://github.com/equinor/requests_ms_auth/dist/requests_ms_auth-{version}.tar.gz",
     author='Lennart Rolland',
     author_email='lennartrolland@gmail.com',
     classifiers=[

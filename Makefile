@@ -1,7 +1,7 @@
 SHELL:=/bin/bash
 ROOT_DIR:=$(shell dirname $(realpath $(lastword $(MAKEFILE_LIST))))
 PACKAGE_VERSION:=$(shell cat VERSION)
-PACKAGE_DIR:="${ROOT_DIR}/requests_adal_auth"
+PACKAGE_DIR:="${ROOT_DIR}/requests_ms_auth"
 TESTS_DIR:="${ROOT_DIR}/tests"
 
 define twine_config
@@ -25,7 +25,7 @@ info:
 
 require:
 	pip install --upgrade pip
-	pip uninstall requests_adal_auth -y
+	pip uninstall requests_ms_auth -y
 	pip install --upgrade pip-tools
 	cat requirements.in | sort -u > r.in
 	pip-compile --output-file=requirements.txt r.in
@@ -38,7 +38,7 @@ require:
 prep:
 	@echo "Prepare development environment"
 	pip install --upgrade pip
-	pip uninstall requests_adal_auth -y
+	pip uninstall requests_ms_auth -y
 	pip install --upgrade pip-tools wheel twine
 	pip install -r test_requirements.in
 	pip install -r requirements.in
@@ -61,15 +61,15 @@ mypy:
 	mypy --ignore-missing-imports "${TESTS_DIR}"
 
 setup:
-	rm -rf requests_adal_auth/build
-	pip uninstall -y requests_adal_auth
-	pip install .
+	rm -rf requests_ms_auth/build
+	pip uninstall -y requests_ms_auth
+	pip install -e .
 
 code-quality: black flake mypy
 
 test:
 	@echo "Testing"
-	py.test -vv tests
+	python -m pytest -vvvv tests
 
 pack:
 	@echo "Packaging"
