@@ -63,13 +63,13 @@ mypy:
 setup:
 	rm -rf requests_adal_auth/build
 	pip uninstall -y requests_adal_auth
-	pip install .
+	pip install -e .
 
 code-quality: black flake mypy
 
 test:
 	@echo "Testing"
-	py.test -vv tests
+	python -m pytest -vvvv tests
 
 pack:
 	@echo "Packaging"

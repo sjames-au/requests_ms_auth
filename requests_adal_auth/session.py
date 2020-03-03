@@ -12,16 +12,37 @@ logger = logging.getLogger(__name__)
 class AdalRequestsSession(requests_oauthlib.OAuth2Session):
 
     """
-    A wrapper for OAuth2Session that allows us to do debugging and adal refresh among other things.
+    A wrapper for OAuth2Session that also implements adal token fetch.
     See https://requests.readthedocs.io/en/latest/_modules/requests/sessions/#Session
     See https://requests-oauthlib.readthedocs.io/en/latest/api.html#oauth-2-0-session
+    See https://adal-python.readthedocs.io/en/latest/
     """
 
     def __init__(
-        self, auth_config={},
+        self, auth_config,
     ):
         self._set_config(auth_config)
         self.raa_state = None
+        self.raa_token = self._fetch_access_token()
+        if not self.raa_token:
+            raise Exception("Could not generate token")
+        # client=requests_oauthlib.WebApplicationClient(client_id=self.raa_client_id, token=self.raa_token)
+        self.raa_client = oauthlib.oauth2.BackendApplicationClient(
+            client_id=self.raa_client_id,
+            token=self.raa_token,
+            auto_refresh_url=self.raa_auto_refresh_url,
+            auto_refresh_kwargs=self.raa_auto_refresh_kwargs,
+            token_updater=self._token_saver,
+            scope=self.raa_scope,
+        )
+        logging.debug(
+            f"@@@ raa Session: __init__(client_id={self.raa_client_id}, auto_refresh_url={self.raa_auto_refresh_url}, scope={self.raa_scope})."
+        )
+        super(AdalRequestsSession, self).__init__(
+            client=self.raa_client, token=self.raa_token,
+        )
+        self.verify_auth()
+
 
     def _set_config(self, auth_config):
         self.raa_auth_config = auth_config
@@ -47,9 +68,8 @@ class AdalRequestsSession(requests_oauthlib.OAuth2Session):
         self.raa_validate_authority = self.raa_tenant != "adfs"
         self.raa_scope = self.raa_auth_config.get("scope", ["read", "write"])
         self.raa_verification_url = self.raa_auth_config.get("verification_url")
-        self.raa_redirect_uri = self.raa_auth_config.get("redirect_uri")
-        if not self.raa_redirect_uri:
-            raise Exception("No redirect_uri specified")
+        if not self.raa_verification_url:
+            raise Exception("No verification_url specified")
         self.raa_auto_refresh_url = f"{self.raa_authority_host_url}/{self.raa_tenant}"
         self.raa_auto_refresh_kwargs = {
             "client_id": self.raa_client_id,
@@ -57,26 +77,6 @@ class AdalRequestsSession(requests_oauthlib.OAuth2Session):
             "resource": self.raa_resource_uri,
         }  # aka extra
 
-    def _setup(self):
-        self.raa_token = self._fetch_access_token()
-        if not self.raa_token:
-            raise Exception("Could not generate token")
-        # client=requests_oauthlib.WebApplicationClient(client_id=self.raa_client_id, token=self.raa_token)
-        self.raa_client = oauthlib.oauth2.BackendApplicationClient(
-            client_id=self.raa_client_id,
-            token=self.raa_token,
-            auto_refresh_url=self.raa_auto_refresh_url,
-            auto_refresh_kwargs=self.raa_auto_refresh_kwargs,
-            token_updater=self._token_saver,
-            scope=self.raa_scope,
-        )
-        logging.debug(
-            f"@@@ raa Session: __init__(client_id={self.raa_client_id}, auto_refresh_url={self.raa_auto_refresh_url}, scope={self.raa_scope}, redirect_uri={self.raa_redirect_uri})."
-        )
-        super(AdalRequestsSession, self).__init__(
-            client=self.raa_client, token=self.raa_token,
-        )
-        self.verify_auth()
 
     def _fetch_access_token(self):
         self.raa_adal_token = None

@@ -1,11 +1,14 @@
-import requests_adal_auth
-
 from unittest import mock
 import adal
+import logging
 import os
 import pytest
+import requests_adal_auth
 import sys
 import typing
+import yaml
+
+logger = logging.getLogger(__name__)
 
 
 @pytest.fixture
@@ -16,9 +19,38 @@ def auth_config():
         "authority_host_url": "dummy-authority",
         "client_id": "dummy-client",
         "client_secret": "dummy-secret",
-        "redirect_uri": "http://blabab",
         "verification_url": "https://bob.com",
     }
+
+
+def load_yaml(filename):
+    if not os.path.exists(filename):
+        return None, f"File did not exist: '{filename}'."
+    with open(filename, "r") as stream:
+        data = {}
+        failure = None
+        try:
+            data = yaml.safe_load(stream)
+        except Exception as e:
+            logger.error(e)
+            failure = e
+            data = {}
+        return data, failure
+
+@pytest.fixture
+def auth_config_live():
+    data, error=load_yaml('secrets.yaml')
+    if not data or error:
+        raise Exception("Could not read secrets: {error}")
+    return data['auth']
+#{
+#"resource": "dummy-resource",
+#"tenant": "dummy-tenant",
+#"authority_host_url": "dummy-authority",
+#"client_id": "dummy-client",
+#"client_secret": "dummy-secret",
+#"verification_url": "https://bob.com",
+#}
 
 
 VALID_TOKEN: typing.Dict[str, typing.Union[str, int]] = {
@@ -59,7 +91,7 @@ BAD_TOKEN: typing.Dict[str, typing.Union[str, int]] = {}
     ],
 )
 def todo_test_fetch_access_token_functioning_adal(
-    MockAuthenticationContext, auth_config, token, expected_oath_token
+    MockAuthenticationContext, auth_config_live, token, expected_oath_token
 ):
     """
     Test that Adal auth token values result in expected OAuth tokens
@@ -71,8 +103,7 @@ def todo_test_fetch_access_token_functioning_adal(
 
     mock_auth_context.acquire_token_with_client_credentials.return_value = token
     session = requests_adal_auth.AdalRequestsSession(auth_config)
-    # TODO: Fix this
-    # assert session._fetch_access_token() == expected_oath_token
+    assert session._fetch_access_token() == expected_oath_token
 
 
 @mock.patch("adal.AuthenticationContext", autospec=True)
@@ -126,19 +157,12 @@ def todo_test_create_auth_session(
     assert create_auth_session(auth_config) is None
 
 
-def todo_test_AdalRequestsSession():
-    session = requests_adal_auth.AdalRequestsSession(
-        {
-            "client_id": "bob",
-            "client_secret": "bob",
-            "tenant": "bob",
-            "resource_uri": "https://bob.com",
-            "authority_host_url": "https://bob.com",
-            "redirect_uri": "https://bob.com",
-            "verification_url": "https://bob.com",
-        }
-    )
-    # session.get("https://equinor.com")
+def todo_test_AdalRequestsSession(auth_config_live):
+    session = requests_adal_auth.AdalRequestsSession(auth_config_live)
+    #session.get("https://equinor.com")
+    ok, message = session.verify_auth()
+    logger.warning(f"Status: {ok} ({message})")
+    assert not ok
 
 
 def test_true():
