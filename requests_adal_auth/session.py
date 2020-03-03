@@ -22,6 +22,7 @@ class AdalRequestsSession(requests_oauthlib.OAuth2Session):
     ):
         self._set_config(auth_config)
         self.raa_state = None
+        self.aouth_header = 'Authorization'
 
     def _set_config(self, auth_config):
         self.raa_auth_config = auth_config
@@ -176,28 +177,41 @@ class AdalRequestsSession(requests_oauthlib.OAuth2Session):
         )
 
     def send(self, request, **kwargs):
+        """Send prepared Request with auth token
+
+        if there's no auth header or it's empty -> use inherited from oauth2 functionality to add token on requests
+        """
         logging.debug(
             f"@@@ raa Session: send(method={request.method}, url='{request.url}')."
         )
         try:
-            response = super(AdalRequestsSession, self).send(request, **kwargs)
+            if request.headers is not None and request.headers.get(self.aouth_header, False):
+                # send prepared Request if access token exists in the Request
+                response = super().send(request, **kwargs)
+            else:
+                # make another call to get token into the header
+                response = self.request(
+                    method=request.method,
+                    url=request.url,
+                    data=request.body,
+                    headers=request.headers,
+                    **kwargs,
+                )
             logging.debug(
                 f"@@@ raa Session: Response head follows: -----------------------"
             )
             logging.info(response.content[0:200])
             return response
-        except requests.exceptions.NewConnectionError as nce:
-            logger.error(
-                f"Could not connect (method={request.method}, url='{request.url}'): {nce}"
-            )
-        except requests.exceptions.HTTPError as he:
-            logger.error(f"HTTP STATUS CODE WAS: {he}")
+        except requests.exceptions.NewConnectionError as e:
+            logger.error(f"Could not connect (method={request.method}, url='{request.url}'): {e}")
+        except requests.exceptions.HTTPError as e:
+            logger.error(f"HTTP STATUS CODE WAS: {e}")
         except Exception as e:
             logger.error(
                 f"Could not perform request(method={request.method}, url='{request.url}'): {e}",
                 exc_info=True,
             )
-        return None
+        raise e
 
     def close(self):
         logging.debug(f"@@@ raa Session: close().")
