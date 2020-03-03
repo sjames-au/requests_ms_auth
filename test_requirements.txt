@@ -29,6 +29,7 @@ pyparsing==2.4.6          # via packaging
 pytest-flakes==4.0.0      # via -r r.in
 pytest-mypy==0.5.0        # via -r r.in
 pytest==4.6.9             # via -r r.in, pytest-flakes, pytest-mypy
+pyyaml==5.3               # via -r r.in
 regex==2020.2.20          # via black
 six==1.14.0               # via -c requirements.txt, mock, packaging, pip-tools, pytest
 toml==0.10.0              # via black

@@ -7,3 +7,4 @@ pytest-flakes~=4.0
 pip-tools~=4.0
 black
 mock~=3.0
+PyYAML~=5.3
