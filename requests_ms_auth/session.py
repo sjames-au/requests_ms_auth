@@ -6,7 +6,7 @@ import pprint
 import requests
 import requests_oauthlib
 import typing
-import simplejson.errors
+import json
 
 logger = logging.getLogger(__name__)
 
@@ -179,7 +179,7 @@ class MsRequestsSession(requests_oauthlib.OAuth2Session):
                     j = None
                     try:
                         j = res.json()
-                    except simplejson.errors.JSONDecodeError:
+                    except ValueError:
                         return False, "No json in response"
                     if not j:
                         return False, "Json reponse was empty"
