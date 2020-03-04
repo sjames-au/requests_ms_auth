@@ -6,13 +6,14 @@ import pytest
 import requests_ms_auth
 import sys
 import typing
-import yaml
+import json
+import requests
 
 logger = logging.getLogger(__name__)
 
 
 @pytest.fixture
-def auth_config():
+def auth_config_dummy():
     return {
         "resource": "dummy-resource",
         "tenant": "dummy-tenant",
@@ -23,27 +24,20 @@ def auth_config():
     }
 
 
-def load_yaml(filename):
-    if not os.path.exists(filename):
-        return None, f"File did not exist: '{filename}'."
-    with open(filename, "r") as stream:
-        data = {}
-        failure = None
-        try:
-            data = yaml.safe_load(stream)
-        except Exception as e:
-            logger.error(e)
-            failure = e
-            data = {}
-        return data, failure
+@pytest.fixture
+def auth_config_live_msal():
+    with open("secrets.json", 'r') as file:
+        data = json.load(file)
+    return data[0]
 
 
 @pytest.fixture
-def auth_config_live():
-    data, error = load_yaml("secrets.yaml")
-    if not data or error:
-        raise Exception("Could not read secrets: {error}")
-    return data["auth"]
+def auth_config_live_adal():
+    with open("secrets.json", 'r') as file:
+        data = json.load(file)
+    data = data[0]
+    data['do_adal']=True
+    return data
 
 
 # {
@@ -94,7 +88,7 @@ BAD_TOKEN: typing.Dict[str, typing.Union[str, int]] = {}
     ],
 )
 def todo_test_fetch_access_token_functioning_adal(
-    MockAuthenticationContext, auth_config_live, token, expected_oath_token
+    MockAuthenticationContext, auth_config_live_msal, token, expected_oath_token
 ):
     """
     Test that Adal auth token values result in expected OAuth tokens
@@ -105,13 +99,13 @@ def todo_test_fetch_access_token_functioning_adal(
     )
 
     mock_auth_context.acquire_token_with_client_credentials.return_value = token
-    session = requests_ms_auth.MsRequestsSession(auth_config)
+    session = requests_ms_auth.MsRequestsSession(auth_config_dummy)
     assert session._fetch_access_token() == expected_oath_token
 
 
 @mock.patch("adal.AuthenticationContext", autospec=True)
 def todo_test_fetch_access_token_malfunctioning_adal(
-    MockAuthenticationContext, auth_config
+    MockAuthenticationContext, auth_config_dummy
 ):
     """
     Test that when adal methods error, Exception is raises
@@ -122,18 +116,18 @@ def todo_test_fetch_access_token_malfunctioning_adal(
     )
     mock_auth_context.acquire_token_with_client_credentials.side_effect = Exception
     with pytest.raises(Exception):
-        fetch_access_token(auth_config)
+        fetch_access_token(auth_config_dummy)
 
     # Context generation errors
     MockAuthenticationContext.side_effect = Exception
     with pytest.raises(Exception):
-        fetch_access_token(auth_config)
+        fetch_access_token(auth_config_dummy)
 
 
 @mock.patch("requests_ms_auth.OAuth2Session", autospec=True)
 @mock.patch("requests_ms_auth.adal.AuthenticationContext", autospec=True)
 def todo_test_create_auth_session(
-    MockAuthenticationContext, MockOAuth2Session, auth_config
+    MockAuthenticationContext, MockOAuth2Session, auth_config_dummy
 ):
     """
     Test that OAuth session creation logic
@@ -148,23 +142,54 @@ def todo_test_create_auth_session(
     # OAuth token retrieved, session created and returns
     MockOAuth2Session.side_effect = "valid-session"
     mock_auth_context.acquire_token_with_client_credentials.return_value = VALID_TOKEN
-    assert create_auth_session(auth_config)
+    assert create_auth_session(auth_config_dummy)
 
     # OAuth token retrieved, session creation throws exception, return session of `None`
     MockOAuth2Session.side_effect = Exception
     mock_auth_context.acquire_token_with_client_credentials.return_value = BAD_TOKEN
-    assert create_auth_session(auth_config) is None
+    assert create_auth_session(auth_config_dummy) is None
 
     # OAuth token not retrieved, return session of `None`
     mock_auth_context.acquire_token_with_client_credentials.return_value = BAD_TOKEN
-    assert create_auth_session(auth_config) is None
+    assert create_auth_session(auth_config_dummy) is None
 
 
-def todo_test_MsRequestsSession(auth_config_live):
-    session = requests_ms_auth.MsRequestsSession(auth_config_live)
-    ok, message = session.verify_auth()
-    assert ok
+# Make sure actually json was returned (HTTP 200 may indicate a web proxy web page being displayed)
+def assert_json_response(res, element):
+    #logger.warning(res)
+    assert res.text
+    j = res.json()
+    assert j
+    #logger.warning(j)
+    data = j[element]
+    assert data
 
+def todo_test_all(auth_config_live_adal):
+    with open("secrets.json", 'r') as file:
+        data = json.load(file)
+    for auth in data:
+        verification_url=auth['verification_url']
+        verification_element=auth['verification_element']
+        for do_adal in [True]:
+            auth['do_adal'] = do_adal
+            session = requests_ms_auth.MsRequestsSession(auth)
+            logger.warning(f"Testing {session}")
+            # Verification
+            ok, message = session.verify_auth()
+            assert ok
+            logger.warning(f"mess: {message}")
+            assert False
+
+def bob():
+    # Direct
+    res = session.get(session.raa_verification_url)
+    assert_json_response(res, verification_element)
+    # Prepared
+    req = requests.Request(
+        "GET", verification_url
+    )
+    res = session.send(req.prepare())
+    assert_json_response(res, verification_element)
 
 def test_true():
     assert True == True
