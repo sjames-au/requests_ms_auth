@@ -179,17 +179,15 @@ def todo_test_all(auth_config_live_adal):
             assert ok
             logger.warning(f"mess: {message}")
             assert False
-
-def bob():
-    # Direct
-    res = session.get(session.raa_verification_url)
-    assert_json_response(res, verification_element)
-    # Prepared
-    req = requests.Request(
-        "GET", verification_url
-    )
-    res = session.send(req.prepare())
-    assert_json_response(res, verification_element)
+            # Direct
+            res = session.get(session.raa_verification_url)
+            assert_json_response(res, verification_element)
+            # Prepared
+            req = requests.Request(
+                "GET", verification_url
+            )
+            res = session.send(req.prepare())
+            assert_json_response(res, verification_element)
 
 def test_true():
     assert True == True

@@ -267,15 +267,16 @@ class MsRequestsSession(requests_oauthlib.OAuth2Session):
         return super(MsRequestsSession, self).close()
 
     def __repr__(self):
-        return f"""{self.__class__.__name__} {{
-    type:                 {'ADAL' if self.msrs_do_adal else 'MSAL'}
-    client_id:            {self.msrs_client_id}
-    resource_uri:         {self.msrs_resource_uri}
-    client_secret:        [hidden]
-    tenant:               {self.msrs_tenant}
-    validate_authority:   {self.msrs_validate_authority}
-    authority_host_url:   {self.msrs_authority_host_url}
-    auto_refresh_url:     {self.msrs_auto_refresh_url}
-    verification:         {self.msrs_verification_url} {f"for '{self.msrs_verification_element}'" if self.msrs_verification_element else ''}
+        return f"""{self.__class__.__name__}: {{
+    type:                 '{'ADAL' if self.msrs_do_adal else 'MSAL'}',
+    client_id:            '{self.msrs_client_id}',
+    resource_uri:         '{self.msrs_resource_uri}',
+    client_secret:        'hidden',
+    tenant:               '{self.msrs_tenant}',
+    validate_authority:   '{self.msrs_validate_authority}',
+    authority_host_url:   '{self.msrs_authority_host_url}',
+    auto_refresh_url:     '{self.msrs_auto_refresh_url}',
+    verification_url:     '{self.msrs_verification_url}',
+    verification_element: '{self.msrs_verification_element}'
 }}
 """
