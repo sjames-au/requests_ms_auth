@@ -4,7 +4,7 @@
 
 `requests_ms_auth` is a [Requests](https://requests.readthedocs.io/en/master/) compatible session class that you can use to authenticate with Microsoft either over [Azure Active Directory Authentication Library (ADAL)](https://adal-python.readthedocs.io/en/latest) or [Microsoft Authentication Library (MSAL)](https://msal-python.readthedocs.io/en/latest).
 
-The package is available on [PyPi](https://pypi.org/project/requests-ms-auth/), the code is available on (github)[https://github.com/equinor/requests_ms_auth].
+The package is available on [PyPi](https://pypi.org/project/requests-ms-auth/), the code is available on [github](https://github.com/equinor/requests_ms_auth).
 
 ## How to use
 
@@ -39,9 +39,8 @@ auth_config = {
     client_secret: "this is a very secret secret key"
     # (Optional) An endpoint that should return 200 on get with these credentials
     #            (for quickly verifying that auth works)
-    verification_url: "https://your.service.example.com/your/api/path"
+    verification_url: "https://your.service.example.com/your/api/verify_endpoint"
 }
-
 ```
 
 ### 4. Instanciate a session from the class and use it:
@@ -51,7 +50,7 @@ auth_config = {
 session = MsRequestsSession(auth_config)
 
 # Use the session as you would use any other Requests session
-res = session.get( "https://your.service.example.com/your/api/path")
+res = session.get( "https://your.service.example.com/your/api/useful_thingy")
 ```
 
 ### 5. Profit!
@@ -77,7 +76,7 @@ The library defaults to MSAL and can be told to use ADAL as an option.
 
 ## License
 
-Please see [LICENSE](https://github.com/equinor/requests_ms_auth/LICENSE) file for details. requests_ms_auth is licensed under GNU AFFERO GENERAL PUBLIC LICENSE and has G-Faps.
+Please see [LICENSE](https://github.com/equinor/requests_ms_auth/blob/master/LICENSE) file for details. requests_ms_auth is licensed under GNU AFFERO GENERAL PUBLIC LICENSE and has G-Faps.
 
 ## History
 
