@@ -1,19 +1,21 @@
+import logging
+import pprint
+import typing
+from json import JSONDecodeError
+
 import adal
 import msal
-import logging
-import oauthlib.oauth2
-import pprint
 import requests
 import requests_oauthlib
-import typing
+from requests.structures import CaseInsensitiveDict
+from requests_ms_auth.ms_backend_application_client import MsBackendApplicationClient
 
 logger = logging.getLogger(__name__)
 
 
 class MsRequestsSession(requests_oauthlib.OAuth2Session):
+    """A wrapper for OAuth2Session that also implements adal token fetch.
 
-    """
-    A wrapper for OAuth2Session that also implements adal token fetch.
     See https://requests.readthedocs.io/en/latest/_modules/requests/sessions/#Session
     See https://requests-oauthlib.readthedocs.io/en/latest/api.html#oauth-2-0-session
     See https://adal-python.readthedocs.io/en/latest/
@@ -21,13 +23,14 @@ class MsRequestsSession(requests_oauthlib.OAuth2Session):
 
     def __init__(self, auth_config):
         self.msrs_aouth_header = 'Authorization'
+        self.msrs_access_token_name = 'access_token'
         self._set_config(auth_config)
         self.msrs_state = None
         self.msrs_token = self._fetch_access_token()
         if not self.msrs_token:
             raise Exception("Could not generate token")
         # client=requests_oauthlib.WebApplicationClient(client_id=self.msrs_client_id, token=self.msrs_token)
-        self.msrs_client = oauthlib.oauth2.BackendApplicationClient(
+        self.msrs_client = MsBackendApplicationClient(
             client_id=self.msrs_client_id,
             token=self.msrs_token,
             auto_refresh_url=self.msrs_auto_refresh_url,
@@ -103,7 +106,7 @@ class MsRequestsSession(requests_oauthlib.OAuth2Session):
                     desc=self.msrs_ms_token.get('error_description')
                     raise Exception(f"Error fetching MSAL token ({error}): {desc}")
                 self.msrs_oathlib_token = {
-                    "access_token": self.msrs_ms_token.get("accessToken", ""),
+                    self.msrs_access_token_name: self.msrs_ms_token.get("accessToken", ""),
                     "refresh_token": self.msrs_ms_token.get("refreshToken", ""),
                     "token_type": self.msrs_ms_token.get("tokenType", "Bearer"),
                     "expires_in": self.msrs_ms_token.get("expiresIn", 0),
@@ -135,7 +138,7 @@ class MsRequestsSession(requests_oauthlib.OAuth2Session):
             )
             if self.msrs_ms_token:
                 self.msrs_oathlib_token = {
-                    "access_token": self.msrs_ms_token.get("accessToken", ""),
+                    self.msrs_access_token_name: self.msrs_ms_token.get("accessToken", ""),
                     "refresh_token": self.msrs_ms_token.get("refreshToken", ""),
                     "token_type": self.msrs_ms_token.get("tokenType", "Bearer"),
                     "expires_in": self.msrs_ms_token.get("expiresIn", 0),
@@ -153,7 +156,6 @@ class MsRequestsSession(requests_oauthlib.OAuth2Session):
     def _token_saver(self, token):
         logger.debug("@@@ msrs: TOKEN SAVER SAVING:")
         logger.info(pprint.pformat(token))
-
 
     def verify_auth(self) -> typing.Tuple[bool, typing.Optional[str]]:
         try:
@@ -175,7 +177,7 @@ class MsRequestsSession(requests_oauthlib.OAuth2Session):
                     j = False
                     try:
                         j = res.json()
-                    except simplejson.errors.JSONDecodeError:
+                    except JSONDecodeError:
                         return False, "No json in response"
                     if not j:
                         return False, "Json reponse was empty"
@@ -213,7 +215,15 @@ class MsRequestsSession(requests_oauthlib.OAuth2Session):
         client_secret=None,
         **kwargs,
     ):
-        logging.info(f"@@@ msrs: request(method={method}, url='{url}').")
+        """This method will be called each time smth should be sent
+
+        Notes:
+            if 'sent' method will be called directly, this method will be invoked if there's no 'token' in the headers
+            'access token' validity will be checked/renewed as well
+        """
+        logging.debug(f"@@@ msrs: request(method={method}, url='{url}').")
+        self.access_token_check_and_renew(headers)
+
         return super(MsRequestsSession, self).request(
             method=method,
             url=url,
@@ -228,13 +238,17 @@ class MsRequestsSession(requests_oauthlib.OAuth2Session):
     def send(self, request, **kwargs):
         """Send prepared Request with auth token
 
-        if there's no auth header or it's empty -> use inherited from oauth2 functionality to add token on requests
+        Notes:
+            if there's no auth header or it's empty -> use inherited from oauth2 functionality to add token on requests
+            'access token' validity will be checked/renewed as well
         """
-        logging.debug(
-            f"@@@ msrs: send(method={request.method}, url='{request.url}')."
-        )
+        logging.debug(f"@@@ msrs: send(method={request.method}, url='{request.url}').")
+        self.access_token_check_and_renew(request.headers)
+
         try:
-            if request.headers is not None and request.headers.get(self.msrs_aouth_header, False):
+            if request.headers is not None and request.headers.get(
+                self.msrs_aouth_header, False
+            ):
                 # send prepared Request if access token exists in the Request
                 response = super().send(request, **kwargs)
             else:
@@ -246,21 +260,49 @@ class MsRequestsSession(requests_oauthlib.OAuth2Session):
                     headers=request.headers,
                     **kwargs,
                 )
-            logging.debug(
-                f"@@@ msrs: Response head follows: -----------------------"
-            )
-            logging.info(response.content[0:200])
+            logging.debug(f"@@@ msrs: Response head follows: -----------------------")
+            logging.debug(response.content[0:200])
             return response
         except requests.exceptions.NewConnectionError as e:
-            logger.error(f"Could not connect (method={request.method}, url='{request.url}'): {e}")
+            logger.error(
+                f"Could not connect (method={request.method}, url='{request.url}'): {e}"
+            )
+            raise e
         except requests.exceptions.HTTPError as e:
             logger.error(f"HTTP STATUS CODE WAS: {e}")
+            raise e
         except Exception as e:
             logger.error(
                 f"Could not perform request(method={request.method}, url='{request.url}'): {e}",
                 exc_info=True,
             )
-        raise e
+            raise e
+
+    def access_token_check_and_renew(self, headers: dict = None) -> None:
+        """Check if 'access token' expired and renew it if needed
+
+        Args:
+            headers: Request headers. You should pass it by link (not copy) for auth header to be deleted.
+                If there's already existing header with old token - we need to delete it fo the future renew.
+        """
+        if self.msrs_client.is_access_token_expired():
+            self.access_token_run_renewal(headers)
+
+    def access_token_run_renewal(self, headers: typing.Optional[CaseInsensitiveDict] = None) -> None:
+        """Renew 'access token' for the Session and its Client instances.
+
+        Args:
+            headers: Request headers. You should pass it by link (not copy) for auth header to be deleted.
+                If there's already existing header with old token - we need to delete it fo the future renew.
+        """
+        self.msrs_token = self._fetch_access_token()
+        self.msrs_client.access_token = self.msrs_token[self.msrs_access_token_name]
+        self.token = self.msrs_token
+
+        try:
+            del headers[self.msrs_aouth_header]
+        except (KeyError, TypeError):
+            pass
 
     def close(self):
         logging.debug(f"@@@ msrs: close().")
@@ -276,6 +318,7 @@ class MsRequestsSession(requests_oauthlib.OAuth2Session):
     validate_authority:   {self.msrs_validate_authority}
     authority_host_url:   {self.msrs_authority_host_url}
     auto_refresh_url:     {self.msrs_auto_refresh_url}
-    verification:         {self.msrs_verification_url} {f"for '{self.msrs_verification_element}'" if self.msrs_verification_element else ''}
+    verification:         {self.msrs_verification_url} {f"for '{self.msrs_verification_element}'" 
+        if self.msrs_verification_element else ''}
 }}
 """
