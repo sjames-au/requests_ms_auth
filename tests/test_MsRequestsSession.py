@@ -26,17 +26,17 @@ def auth_config_dummy():
 
 @pytest.fixture
 def auth_config_live_msal():
-    with open("secrets.json", 'r') as file:
+    with open("secrets.json", "r") as file:
         data = json.load(file)
     return data[0]
 
 
 @pytest.fixture
 def auth_config_live_adal():
-    with open("secrets.json", 'r') as file:
+    with open("secrets.json", "r") as file:
         data = json.load(file)
     data = data[0]
-    data['do_adal']=True
+    data["do_adal"] = True
     return data
 
 
@@ -156,22 +156,23 @@ def todo_test_create_auth_session(
 
 # Make sure actually json was returned (HTTP 200 may indicate a web proxy web page being displayed)
 def assert_json_response(res, element):
-    #logger.warning(res)
+    # logger.warning(res)
     assert res.text
     j = res.json()
     assert j
-    #logger.warning(j)
+    # logger.warning(j)
     data = j[element]
     assert data
 
+
 def todo_test_all(auth_config_live_adal):
-    with open("secrets.json", 'r') as file:
+    with open("secrets.json", "r") as file:
         data = json.load(file)
     for auth in data:
-        verification_url=auth['verification_url']
-        verification_element=auth['verification_element']
+        verification_url = auth["verification_url"]
+        verification_element = auth["verification_element"]
         for do_adal in [True]:
-            auth['do_adal'] = do_adal
+            auth["do_adal"] = do_adal
             session = requests_ms_auth.MsRequestsSession(auth)
             logger.warning(f"Testing {session}")
             # Verification
@@ -179,17 +180,14 @@ def todo_test_all(auth_config_live_adal):
             assert ok
             logger.warning(f"mess: {message}")
             assert False
+            # Direct
+            res = session.get(session.raa_verification_url)
+            assert_json_response(res, verification_element)
+            # Prepared
+            req = requests.Request("GET", verification_url)
+            res = session.send(req.prepare())
+            assert_json_response(res, verification_element)
 
-def bob():
-    # Direct
-    res = session.get(session.raa_verification_url)
-    assert_json_response(res, verification_element)
-    # Prepared
-    req = requests.Request(
-        "GET", verification_url
-    )
-    res = session.send(req.prepare())
-    assert_json_response(res, verification_element)
 
 def test_true():
     assert True == True

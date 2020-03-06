@@ -25,8 +25,6 @@ class MsRequestsSession(requests_oauthlib.OAuth2Session):
     msrs_access_token_name = 'access_token'
 
     def __init__(self, auth_config):
-        self.msrs_aouth_header = 'Authorization'
-        self.msrs_access_token_name = 'access_token'
         self._set_config(auth_config)
         self.msrs_state = None
         self.msrs_token = self._fetch_access_token()
@@ -54,7 +52,7 @@ class MsRequestsSession(requests_oauthlib.OAuth2Session):
     def _set_config(self, auth_config):
         self.msrs_auth_config = auth_config
         self.msrs_client_id = self.msrs_auth_config.get("client_id")
-        self.msrs_do_adal = self.msrs_auth_config.get("do_adal", True)
+        self.msrs_do_adal = self.msrs_auth_config.get("do_adal", False)
         if not self.msrs_client_id:
             raise Exception("No client_id specified")
         self.msrs_client_secret = self.msrs_auth_config.get("client_secret")
@@ -104,9 +102,9 @@ class MsRequestsSession(requests_oauthlib.OAuth2Session):
                 context.acquire_token_for_client(scopes=[self.msrs_resource_uri]) or {}
             )
             if self.msrs_ms_token:
-                if self.msrs_ms_token.get('error'):
-                    error=self.msrs_ms_token.get('error')
-                    desc=self.msrs_ms_token.get('error_description')
+                if self.msrs_ms_token.get("error"):
+                    error = self.msrs_ms_token.get("error")
+                    desc = self.msrs_ms_token.get("error_description")
                     raise Exception(f"Error fetching MSAL token ({error}): {desc}")
                 self.msrs_oathlib_token = {
                     self.msrs_access_token_name: self.msrs_ms_token.get("accessToken", ""),
@@ -177,7 +175,7 @@ class MsRequestsSession(requests_oauthlib.OAuth2Session):
                     )
                     if not res.text:
                         return False, "Respones was empty"
-                    j = False
+                    j = None
                     try:
                         j = res.json()
                     except JSONDecodeError:
@@ -185,7 +183,10 @@ class MsRequestsSession(requests_oauthlib.OAuth2Session):
                     if not j:
                         return False, "Json reponse was empty"
                     if not j.get(self.msrs_verification_element, False):
-                        return False, f"Expected json element '{self.msrs_verification_element}' not found in response"
+                        return (
+                            False,
+                            f"Expected json element '{self.msrs_verification_element}' not found in response",
+                        )
                 else:
                     logger.info(
                         f"@@@ msrs: No verification element specified, skipping json result verification"
@@ -249,9 +250,7 @@ class MsRequestsSession(requests_oauthlib.OAuth2Session):
         self.access_token_check_and_renew(request.headers)
 
         try:
-            if request.headers is not None and request.headers.get(
-                self.msrs_aouth_header, False
-            ):
+            if request.headers is not None and request.headers.get(self.msrs_aouth_header, False):
                 # send prepared Request if access token exists in the Request
                 response = super().send(request, **kwargs)
             else:
@@ -312,16 +311,16 @@ class MsRequestsSession(requests_oauthlib.OAuth2Session):
         return super(MsRequestsSession, self).close()
 
     def __repr__(self):
-        return f"""{self.__class__.__name__} {{
-    type:                 {'ADAL' if self.msrs_do_adal else 'MSAL'}
-    client_id:            {self.msrs_client_id}
-    resource_uri:         {self.msrs_resource_uri}
-    client_secret:        [hidden]
-    tenant:               {self.msrs_tenant}
-    validate_authority:   {self.msrs_validate_authority}
-    authority_host_url:   {self.msrs_authority_host_url}
-    auto_refresh_url:     {self.msrs_auto_refresh_url}
-    verification:         {self.msrs_verification_url} {f"for '{self.msrs_verification_element}'" 
-        if self.msrs_verification_element else ''}
+        return f"""{self.__class__.__name__}: {{
+    type:                 '{'ADAL' if self.msrs_do_adal else 'MSAL'}',
+    client_id:            '{self.msrs_client_id}',
+    resource_uri:         '{self.msrs_resource_uri}',
+    client_secret:        'hidden',
+    tenant:               '{self.msrs_tenant}',
+    validate_authority:   '{self.msrs_validate_authority}',
+    authority_host_url:   '{self.msrs_authority_host_url}',
+    auto_refresh_url:     '{self.msrs_auto_refresh_url}',
+    verification_url:     '{self.msrs_verification_url}',
+    verification_element: '{self.msrs_verification_element}'
 }}
 """

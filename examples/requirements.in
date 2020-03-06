@@ -1,0 +1,5 @@
+requests_ms_auth>=0.0.10
+gordo~=0.50
+pprint~=0.1
+PyYAML~=5.3
+
