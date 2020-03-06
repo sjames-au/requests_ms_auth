@@ -1,8 +1,8 @@
-# Python Requests session for OAuth2 + Microsoft (MSAL/ADAL)
+# Python Requests for OAuth2 + MSAL / ADAL
 
 ## About
 
-This project provides a [Requests](https://requests.readthedocs.io/en/master/) compatible session that you can use to authenticate with Microsoft using he following:
+This project provides a simple [Requests](https://requests.readthedocs.io/en/master/) compatible session that you can use to authenticate with Microsoft using he following:
 * Azure Active Directory Authentication Library ([ADAL](https://adal-python.readthedocs.io/en/latest))
 * Microsoft Authentication Library([MSAL](https://msal-python.readthedocs.io/en/latest)).
 
@@ -13,7 +13,7 @@ Especially this project can be used to gain easy access to services from [Equino
 | Service | Example code |
 |---------|-----------|
 | [Gordo](https://github.com/equinor/gordo) | [gordo_example.py](https://github.com/equinor/requests_ms_auth/blob/master/examples/gordo_example.py) |
-| [Time Series API](https://github.com/equinor/OmniaPlant/tree/master/Omnia%20Timeseries%20API) | [gordo_example.py](https://github.com/equinor/requests_ms_auth/blob/master/examples/time_series_api_example.py) |
+| [Time Series API](https://github.com/equinor/OmniaPlant/tree/master/Omnia%20Timeseries%20API) | [time_series_api_example.py](https://github.com/equinor/requests_ms_auth/blob/master/examples/time_series_api_example.py) |
 
 ## How to use
 

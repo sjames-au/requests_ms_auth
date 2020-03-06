@@ -29,13 +29,13 @@ require:
 	pip install --upgrade pip
 	pip uninstall requests_ms_auth -y
 	pip install --upgrade pip-tools
-	cat requirements.in | sort -u > r.in
-	pip-compile --output-file=requirements.txt r.in
-	cat requirements.in, test_requirements.in | sort -u > r.in
-	pip-compile --output-file=test_requirements.txt r.in
-	[ ! -e r.in ] || rm r.in
-	pip install -r requirements.txt
-	pip install -r test_requirements.txt
+	cat requirements/requirements.in | sort -u > requirements/temp_requirements.in
+	pip-compile --output-file=requirements/requirements.txt requirements/temp_requirements.in
+	cat requirements/requirements.in, requirements/test_requirements.in | sort -u > requirements/temp_requirements.in
+	pip-compile --output-file=requirements/test_requirements.txt requirements/temp_requirements.in
+	[ ! -e requirements/temp_requirements.in ] || rm requirements/temp_requirements.in
+	pip install -r requirements/requirements.txt
+	pip install -r requirements/test_requirements.txt
 
 prep:
 	@echo "Prepare development environment"
