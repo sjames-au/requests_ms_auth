@@ -49,10 +49,10 @@ setup(
     long_description=open('README.md').read(),
     long_description_content_type="text/markdown",
     install_requires=read_requirements_file(
-        "requirements.in"
+        "requirements/requirements.in"
     ),  # Allow flexible deps for install
     tests_require=read_requirements_file(
-        "test_requirements.txt"
+        "requirements/test_requirements.txt"
     ),  # Use rigid deps for testing
     test_suite="tests",
     python_requires=">=3.4.0",
