@@ -1,9 +1,10 @@
 """Contain logic for Backend Client for using by Session"""
+import logging
 import time
 
 import oauthlib.oauth2
 
-from setup import logger
+logger = logging.getLogger(__name__)
 
 
 class MsBackendApplicationClient(oauthlib.oauth2.BackendApplicationClient):
@@ -20,7 +21,7 @@ class MsBackendApplicationClient(oauthlib.oauth2.BackendApplicationClient):
         """
         token_expiration_time_correction = 15  # in seconds
 
-        if self._expires_at and (self._expires_at + token_expiration_time_correction) < time.time():
+        if self._expires_at and (self._expires_at - token_expiration_time_correction) < time.time():
             logger.debug("Token has expired.")
             return True
         return False

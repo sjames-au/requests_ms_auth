@@ -21,6 +21,9 @@ class MsRequestsSession(requests_oauthlib.OAuth2Session):
     See https://adal-python.readthedocs.io/en/latest/
     """
 
+    msrs_aouth_header = 'Authorization'
+    msrs_access_token_name = 'access_token'
+
     def __init__(self, auth_config):
         self.msrs_aouth_header = 'Authorization'
         self.msrs_access_token_name = 'access_token'
@@ -51,7 +54,7 @@ class MsRequestsSession(requests_oauthlib.OAuth2Session):
     def _set_config(self, auth_config):
         self.msrs_auth_config = auth_config
         self.msrs_client_id = self.msrs_auth_config.get("client_id")
-        self.msrs_do_adal = self.msrs_auth_config.get("do_adal", False)
+        self.msrs_do_adal = self.msrs_auth_config.get("do_adal", True)
         if not self.msrs_client_id:
             raise Exception("No client_id specified")
         self.msrs_client_secret = self.msrs_auth_config.get("client_secret")
