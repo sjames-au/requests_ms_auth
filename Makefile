@@ -3,6 +3,7 @@ ROOT_DIR:=$(shell dirname $(realpath $(lastword $(MAKEFILE_LIST))))
 PACKAGE_VERSION:=$(shell cat VERSION)
 PACKAGE_DIR:="${ROOT_DIR}/requests_ms_auth"
 TESTS_DIR:="${ROOT_DIR}/tests"
+EXAMPLES_DIR:="${ROOT_DIR}/examples"
 
 define twine_config
 [distutils]
@@ -22,6 +23,7 @@ info:
 	@echo "ROOT_DIR=${ROOT_DIR}"
 	@echo "PACKAGE_DIR=${PACKAGE_DIR}"
 	@echo "TESTS_DIR=${TESTS_DIR}"
+	@echo "EXAMPLES_DIR=${EXAMPLES_DIR}"
 
 require:
 	pip install --upgrade pip
@@ -50,6 +52,7 @@ black:
 	@echo "Ensuring code quality with black"
 	black -l 88 -t py37 "${PACKAGE_DIR}"
 	black -l 88 -t py37 "${TESTS_DIR}"
+	black -l 88 -t py37 "${EXAMPLES_DIR}"
 
 flake:
 	@echo "Ensuring code quality with flake"
@@ -59,6 +62,7 @@ mypy:
 	@echo "Ensuring code quality with mypy"
 	mypy --ignore-missing-imports "${PACKAGE_DIR}"
 	mypy --ignore-missing-imports "${TESTS_DIR}"
+	mypy --ignore-missing-imports "${EXAMPLES_DIR}"
 
 setup:
 	rm -rf requests_ms_auth/build
