@@ -99,24 +99,30 @@ class MsRequestsSession(requests_oauthlib.OAuth2Session):
                 client_id=self.msrs_client_id,
                 client_credential=self.msrs_client_secret,
             )
-            self.msrs_ms_token = (
-                context.acquire_token_for_client(scopes=[self.msrs_resource_uri]) or {}
-            )
+            scopes = [ f"{self.msrs_resource_uri}/.default"]
+            self.msrs_ms_token = context.acquire_token_for_client(scopes=scopes)
             if self.msrs_ms_token:
                 if self.msrs_ms_token.get("error"):
                     error = self.msrs_ms_token.get("error")
                     desc = self.msrs_ms_token.get("error_description")
                     raise Exception(f"Error fetching MSAL token ({error}): {desc}")
                 self.msrs_oathlib_token = {
-                    "access_token": self.msrs_ms_token.get("accessToken", ""),
-                    "refresh_token": self.msrs_ms_token.get("refreshToken", ""),
-                    "token_type": self.msrs_ms_token.get("tokenType", "Bearer"),
-                    "expires_in": self.msrs_ms_token.get("expiresIn", 0),
+                    "access_token": self.msrs_ms_token.get("access_token", ""),
+                    "refresh_token": self.msrs_ms_token.get("refresh_token", ""),
+                    "token_type": self.msrs_ms_token.get("token_type", "Bearer"),
+                    "expires_in": self.msrs_ms_token.get("expires_in", 0),
+                    "ext_expires_in": self.msrs_ms_token.get("ext_expires_in", 0),
                 }
             else:
                 logger.error(
                     f"Could not get token for client {self.msrs_auto_refresh_url}"
                 )
+                raise Exception("No token aqcuired")
+            if not self.msrs_oathlib_token.get("access_token"):
+                logger.warning(
+                    f"Token aqcuired seems lacking"
+                )
+                raise Exception("Token aqcuired seems lacking")
         except Exception as e:
             logger.error(f"Error fetching token: {e}", exc_info=True)
             logger.warning(f"NOTE: {self}")
