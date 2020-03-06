@@ -69,7 +69,7 @@ setup:
 	pip uninstall -y requests_ms_auth
 	pip install -e .
 
-code-quality: black flake #mypy
+code-quality: black flake mypy
 
 test:
 	@echo "Testing"

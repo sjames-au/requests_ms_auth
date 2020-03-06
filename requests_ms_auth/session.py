@@ -87,7 +87,6 @@ class MsRequestsSession(requests_oauthlib.OAuth2Session):
 
     def _fetch_access_token_msal(self) -> Dict:
         self.msrs_ms_token = None
-        self.msrs_oathlib_token = None
         try:
             context = msal.ConfidentialClientApplication(
                 authority=self.msrs_auto_refresh_url,
@@ -109,15 +108,14 @@ class MsRequestsSession(requests_oauthlib.OAuth2Session):
                 }
             else:
                 logger.error(f"Could not get token for client {self.msrs_auto_refresh_url}")
+            return self.msrs_oathlib_token
         except Exception as e:
             logger.error(f"Error fetching token: {e}", exc_info=True)
             logger.warning(f"NOTE: {self}")
             raise e
-        return self.msrs_oathlib_token
 
     def _fetch_access_token_adal(self) -> Dict:
         self.msrs_ms_token = None
-        self.msrs_oathlib_token = None
         try:
             context = adal.AuthenticationContext(
                 authority=self.msrs_auto_refresh_url, validate_authority=self.msrs_validate_authority, api_version=None,
@@ -137,11 +135,11 @@ class MsRequestsSession(requests_oauthlib.OAuth2Session):
                 }
             else:
                 logger.error(f"Could not get token for client {self.msrs_auto_refresh_url}")
+            return self.msrs_oathlib_token
         except Exception as e:
             logger.error(f"Error fetching token: {e}", exc_info=True)
             logger.warning(f"NOTE: {self}")
             raise e
-        return self.msrs_oathlib_token
 
     def _token_saver(self, token):
         logger.debug("@@@ msrs: TOKEN SAVER SAVING:")
@@ -240,7 +238,7 @@ class MsRequestsSession(requests_oauthlib.OAuth2Session):
             )
             raise e
 
-    def access_token_check_and_renew(self, headers: dict = None) -> None:
+    def access_token_check_and_renew(self, headers: Optional[CaseInsensitiveDict] = None) -> None:
         """Check if 'access token' expired and renew it if needed
 
         Args:
@@ -262,7 +260,7 @@ class MsRequestsSession(requests_oauthlib.OAuth2Session):
         self.token = self.msrs_token
 
         try:
-            del headers[self.msrs_aouth_header]
+            del headers[self.msrs_aouth_header]  # type: ignore
         except (KeyError, TypeError):
             pass
 
