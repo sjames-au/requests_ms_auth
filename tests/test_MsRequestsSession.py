@@ -76,12 +76,7 @@ BAD_TOKEN: typing.Dict[str, typing.Union[str, int]] = {}
         # Single key provided, returns `oath` defaults for other keys
         (
             {"accessToken": "dummy-token"},
-            {
-                "access_token": "dummy-token",
-                "refresh_token": "",
-                "token_type": "Bearer",
-                "expires_in": 0,
-            },
+            {"access_token": "dummy-token", "refresh_token": "", "token_type": "Bearer", "expires_in": 0,},
         ),
         # Empty token provided, get `oath` token of `None`
         (BAD_TOKEN, None),
@@ -104,9 +99,7 @@ def todo_test_fetch_access_token_functioning_adal(
 
 
 @mock.patch("adal.AuthenticationContext", autospec=True)
-def todo_test_fetch_access_token_malfunctioning_adal(
-    MockAuthenticationContext, auth_config_dummy
-):
+def todo_test_fetch_access_token_malfunctioning_adal(MockAuthenticationContext, auth_config_dummy):
     """
     Test that when adal methods error, Exception is raises
     """
@@ -126,9 +119,7 @@ def todo_test_fetch_access_token_malfunctioning_adal(
 
 @mock.patch("requests_ms_auth.OAuth2Session", autospec=True)
 @mock.patch("requests_ms_auth.adal.AuthenticationContext", autospec=True)
-def todo_test_create_auth_session(
-    MockAuthenticationContext, MockOAuth2Session, auth_config_dummy
-):
+def todo_test_create_auth_session(MockAuthenticationContext, MockOAuth2Session, auth_config_dummy):
     """
     Test that OAuth session creation logic
     1. A valid token, and successful session creation returns the session
