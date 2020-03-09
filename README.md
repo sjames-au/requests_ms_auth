@@ -1,10 +1,19 @@
-# Python Requests session for authenticating with Microsoft (MSAL/ADAL)
+# Python Requests for OAuth2 + MSAL / ADAL
 
 ## About
 
-`requests_ms_auth` is a [Requests](https://requests.readthedocs.io/en/master/) compatible session class that you can use to authenticate with Microsoft either over [Azure Active Directory Authentication Library (ADAL)](https://adal-python.readthedocs.io/en/latest) or [Microsoft Authentication Library (MSAL)](https://msal-python.readthedocs.io/en/latest).
+This project provides a simple [Requests](https://requests.readthedocs.io/en/master/) compatible session that you can use to authenticate with Microsoft using he following:
+* Azure Active Directory Authentication Library ([ADAL](https://adal-python.readthedocs.io/en/latest))
+* Microsoft Authentication Library([MSAL](https://msal-python.readthedocs.io/en/latest)).
 
-The package is available on [PyPi](https://pypi.org/project/requests-ms-auth/), the code is available on [github](https://github.com/equinor/requests_ms_auth).
+The package is available on [PyPi](https://pypi.org/project/requests-ms-auth/) and the code is available on [github](https://github.com/equinor/requests_ms_auth).
+
+Especially this project can be used to gain easy access to services from [Equinor API gateway]( https://api.equinor.com/ ):
+
+| Service | Example code |
+|---------|-----------|
+| [Gordo](https://github.com/equinor/gordo) | [gordo_example.py](https://github.com/equinor/requests_ms_auth/blob/master/examples/gordo_example.py) |
+| [Time Series API](https://github.com/equinor/OmniaPlant/tree/master/Omnia%20Timeseries%20API) | [time_series_api_example.py](https://github.com/equinor/requests_ms_auth/blob/master/examples/time_series_api_example.py) |
 
 ## How to use
 
@@ -18,28 +27,39 @@ python3 -m pip install --upgrade requests_ms_auth
 ### 2. Import the class:
 
 ```python
-# Import the session class
+# Import the session class into your code
 from requests_ms_auth import MsRequestsSession:
 ```
 
 ### 3. Prepare credentials
 
 ```python
-# Prepare your credentials in a dict
+# Prepare your credentials in a dict (or load it from yaml/json etc).
 auth_config = {
-    # The Azure resource ID
-    resource: "12345678-1234-1234-1234-123456789abc"
-    # The Azure tenant ID
-    tenant: "12345678-1234-1234-1234-123456789abc"
-    # The Azure authority host URL
-    authority_host_url: "https://login.microsoftonline.com"
-    # The service client ID
-    client_id: "12345678-1234-1234-1234-123456789abc"
-    # The service secret
-    client_secret: "this is a very secret secret key"
-    # (Optional) An endpoint that should return 200 on get with these credentials
-    #            (for quickly verifying that auth works)
-    verification_url: "https://your.service.example.com/your/api/verify_endpoint"
+
+    # The Azure resource ID  [required]
+    resource: "12345678-1234-1234-1234-123456789abc",
+
+    # The Azure tenant ID  [required]
+    tenant: "12345678-1234-1234-1234-123456789abc",
+
+    # The client ID  [required]
+    client_id: "12345678-1234-1234-1234-123456789abc",
+
+    # The client secret  [required]
+    client_secret: "this is a very secret secret key",
+
+    ## Optional arguments
+
+    # Select ADAL over MSAL [optional]
+    # NOTE: MSAL is default and preferred
+    do_adal: False,
+
+    # An endpoint that should return 200 when auth works [optional]
+    verification_url: "https://your.service.example.com/your/api/verify_endpoint",
+
+    # A json element name that should be in the top level of response body for verification_url [optional]
+    verification_element: "data",
 }
 ```
 
@@ -59,20 +79,24 @@ The session should automatically fetch a token on startup and when the last toke
 
 ## Implementation details
 
-The library uses `pip-compile` with `requirements.in` to manage and pin requirements. Requirements for test are maintained in a separate `test_rquirements.in`.
+* The library uses `pip-compile` with `requirements.in` to manage and pin requirements. Requirements for test are maintained in a separate `test_rquirements.in`.
 
-The library uses a Makefile to manage building, packaging and uploading of versions, as well as many short-cuts for running tests, compiling requirements and more. To get a menu simply invoke it with out target like this:
+* The library uses a Makefile to manage building, packaging and uploading of versions, as well as many short-cuts for running tests, compiling requirements and more. To get a menu simply invoke it with out target like this:
 
 ```bash
 # Invoke the makefile without targets to see a menu of available targets
 make
 ```
 
-The library is built by github actions.
+* The library is built and tested by github actions.
 
-The library defaults to MSAL and can be told to use ADAL as an option.
+* The package is prepared and uploaded to PyPi by github actions.
 
+* The library defaults to **MSAL** and can be told to use **ADAL** as an option.
 
+* To supply OAuth2 compatability the library depends on
+  * [Requests](https://requests.readthedocs.io/en/master/)
+  * [Requests-OAuthlib](https://requests-oauthlib.readthedocs.io/en/latest/) 
 
 ## License
 
@@ -80,4 +104,4 @@ Please see [LICENSE](https://github.com/equinor/requests_ms_auth/blob/master/LIC
 
 ## History
 
-This project grew from the need of the [latigo](https://github.com/equinor/latigo) project.
+This project grew from the needs of the [latigo](https://github.com/equinor/latigo) project.

@@ -3,6 +3,7 @@ ROOT_DIR:=$(shell dirname $(realpath $(lastword $(MAKEFILE_LIST))))
 PACKAGE_VERSION:=$(shell cat VERSION)
 PACKAGE_DIR:="${ROOT_DIR}/requests_ms_auth"
 TESTS_DIR:="${ROOT_DIR}/tests"
+EXAMPLES_DIR:="${ROOT_DIR}/examples"
 
 define twine_config
 [distutils]
@@ -22,43 +23,46 @@ info:
 	@echo "ROOT_DIR=${ROOT_DIR}"
 	@echo "PACKAGE_DIR=${PACKAGE_DIR}"
 	@echo "TESTS_DIR=${TESTS_DIR}"
+	@echo "EXAMPLES_DIR=${EXAMPLES_DIR}"
 
 require:
 	pip install --upgrade pip
 	pip uninstall requests_ms_auth -y
 	pip install --upgrade pip-tools
-	cat requirements.in | sort -u > r.in
-	pip-compile --output-file=requirements.txt r.in
-	cat requirements.in, test_requirements.in | sort -u > r.in
-	pip-compile --output-file=test_requirements.txt r.in
-	[ ! -e r.in ] || rm r.in
-	pip install -r requirements.txt
-	pip install -r test_requirements.txt
+	cat requirements/requirements.in | sort -u > requirements/temp_requirements.in
+	pip-compile --output-file=requirements/requirements.txt requirements/temp_requirements.in
+	cat requirements/requirements.in, requirements/test_requirements.in | sort -u > requirements/temp_requirements.in
+	pip-compile --output-file=requirements/test_requirements.txt requirements/temp_requirements.in
+	[ ! -e requirements/temp_requirements.in ] || rm requirements/temp_requirements.in
+	pip install -r requirements/requirements.txt
+	pip install -r requirements/test_requirements.txt
 
 prep:
 	@echo "Prepare development environment"
 	pip install --upgrade pip
 	pip uninstall requests_ms_auth -y
 	pip install --upgrade pip-tools wheel twine
-	pip install -r test_requirements.in
-	pip install -r requirements.in
+	pip install -r requirements/test_requirements.in
+	pip install -r requirements/requirements.in
 
 build:
 	@echo "Building"
 
 black:
 	@echo "Ensuring code quality with black"
-	black -l 88 -t py37 "${PACKAGE_DIR}"
-	black -l 88 -t py37 "${TESTS_DIR}"
+	black -t py37 "${PACKAGE_DIR}"
+	black -t py37 "${TESTS_DIR}"
+	black -t py37 "${EXAMPLES_DIR}"
 
 flake:
 	@echo "Ensuring code quality with flake"
-	flake8 --ignore=E731,W503,W504,E501,E265,C0301,W1202,W1203 --max-complexity 10 --exclude build,junk --exit-zero "${PACKAGE_DIR}"
+	flake8 "${PACKAGE_DIR}"
 
 mypy:
 	@echo "Ensuring code quality with mypy"
-	mypy --ignore-missing-imports "${PACKAGE_DIR}"
-	mypy --ignore-missing-imports "${TESTS_DIR}"
+	mypy "${PACKAGE_DIR}"
+	mypy "${TESTS_DIR}"
+	mypy "${EXAMPLES_DIR}"
 
 setup:
 	rm -rf requests_ms_auth/build
