@@ -1,6 +1,5 @@
 import logging
 import pprint
-import sys
 from simplejson.errors import JSONDecodeError
 from typing import Optional, Dict, Tuple
 
