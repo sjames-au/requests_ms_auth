@@ -1,7 +1,7 @@
 import logging
 import pprint
 import sys
-from json import JSONDecodeError
+from simplejson.errors import JSONDecodeError
 from typing import Optional, Dict, Tuple
 
 import adal
@@ -155,42 +155,38 @@ class MsRequestsSession(requests_oauthlib.OAuth2Session):
         logger.debug("@@@ msrs: Saving token: " + pprint.pformat(token))
 
     def verify_auth(self) -> Tuple[bool, Optional[str]]:
-        try:
-            if self.msrs_verification_url:
-                logger.info("@@@ msrs: Verification URL specified, performing http verification")
-                res = self.get(self.msrs_verification_url)
-                if res is None:
-                    return False, "Verification failed: No response object returned"
-                if not res:
-                    try:
-                        res.raise_for_status()
-                    except requests.exceptions.HTTPError:
-                        return False, f"Verification failed: Request returned HTTP {res.status_code} ({res.reason})"
-                if self.msrs_verification_element:
-                    logger.debug("@@@ msrs: Verification element specified, performing json result verification")
-                    if not res.text:
-                        return False, "Verification failed: Request returned empty response"
-                    j = None
-                    try:
-                        j = res.json()
-                    except JSONDecodeError:
-                        return False, f"Verification failed: Response was not json. Excerpt: '{res.text[0:100]}'..."
-                    if not j:
-                        return False, "Verification failed: Returned json was empty"
+        if self.msrs_verification_url:
+            logger.info("@@@ msrs: Verification URL specified, performing http verification")
+            res = self.get(self.msrs_verification_url)
+            if res is None:
+                return False, "Verification failed: No response object returned"
+            if not res:
+                try:
+                    res.raise_for_status()
+                except requests.exceptions.HTTPError:
+                    return False, f"Verification failed: Request returned HTTP {res.status_code} ({res.reason})"
+            if self.msrs_verification_element:
+                logger.debug("@@@ msrs: Verification element specified, performing json result verification")
+                if not res.text:
+                    return False, "Verification failed: Request returned empty response"
+                j = None
+                try:
+                    j = res.json()
+                except JSONDecodeError:
+                    return False, f"Verification failed: Response was not json. Excerpt: '{res.text[0:100]}'..."
+                if not j:
+                    return False, "Verification failed: Returned json was empty"
 
-                    if not j.get(self.msrs_verification_element, False):
-                        return (
-                            False,
-                            f"Verification failed: Expected json element '{self.msrs_verification_element}' not "
-                            + f"found in response.  Excerpt: '{res.text[0:100]}...'",
-                        )
-                else:
-                    logger.debug(f"@@@ msrs: No verification element specified, skipping json result verification")
+                if not j.get(self.msrs_verification_element, False):
+                    return (
+                        False,
+                        f"Verification failed: Expected json element '{self.msrs_verification_element}' not "
+                        + f"found in response.  Excerpt: '{res.text[0:100]}...'",
+                    )
             else:
-                logger.debug(f"@@@ msrs: No verification URL specified, skipping http verification")
-        except Exception:
-            exc_type, exc_value, exc_traceback = sys.exc_info()
-            return False, f"Verification failed: Unexpected {type(exc_type)}: {exc_value}"
+                logger.debug(f"@@@ msrs: No verification element specified, skipping json result verification")
+        else:
+            logger.debug(f"@@@ msrs: No verification URL specified, skipping http verification")
         # Success
         return True, None
 

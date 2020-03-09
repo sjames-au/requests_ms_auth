@@ -169,10 +169,9 @@ def todo_test_all(auth_config_live_adal):
             # Verification
             ok, message = session.verify_auth()
             assert ok
-            logger.warning(f"mess: {message}")
-            assert False
+            logger.warning(f"Message: {message}")
             # Direct
-            res = session.get(session.raa_verification_url)
+            res = session.get(session.msrs_verification_url)
             assert_json_response(res, verification_element)
             # Prepared
             req = requests.Request("GET", verification_url)
