@@ -50,19 +50,19 @@ build:
 
 black:
 	@echo "Ensuring code quality with black"
-	black -l 88 -t py37 "${PACKAGE_DIR}"
-	black -l 88 -t py37 "${TESTS_DIR}"
-	black -l 88 -t py37 "${EXAMPLES_DIR}"
+	black -t py37 "${PACKAGE_DIR}"
+	black -t py37 "${TESTS_DIR}"
+	black -t py37 "${EXAMPLES_DIR}"
 
 flake:
 	@echo "Ensuring code quality with flake"
-	flake8 --ignore=E731,W503,W504,E501,E265,C0301,W1202,W1203 --max-complexity 10 --exclude build,junk --exit-zero "${PACKAGE_DIR}"
+	flake8 "${PACKAGE_DIR}"
 
 mypy:
 	@echo "Ensuring code quality with mypy"
-	mypy --ignore-missing-imports "${PACKAGE_DIR}"
-	mypy --ignore-missing-imports "${TESTS_DIR}"
-	mypy --ignore-missing-imports "${EXAMPLES_DIR}"
+	mypy "${PACKAGE_DIR}"
+	mypy "${TESTS_DIR}"
+	mypy "${EXAMPLES_DIR}"
 
 setup:
 	rm -rf requests_ms_auth/build

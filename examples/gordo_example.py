@@ -29,16 +29,16 @@ if __name__ == "__main__":
     # 1. Load credentials from file (never store credentials in git)!
     filename = "time_series_api_credentials.yaml"
     logger.info(f"Loading credentials from {filename}")
-    auth_config={}
+    auth_config = {}
     with open(filename, "r") as stream:
         auth_config = yaml.safe_load(stream)
-    logger.info("Loaded credentials:\n"+pprint.pformat(auth_config))
+    logger.info("Loaded credentials:\n" + pprint.pformat(auth_config))
 
     # 2. Instanciate a session with authentication dict as parameters
     session = MsRequestsSession(auth_config)
 
     # 3. Instanciate the Gordo client using our session
-    client = Client( project="ioc-1901", host="ioc.dev.aurora.equinor.com", session=session)
+    client = Client(project="ioc-1901", host="ioc.dev.aurora.equinor.com", session=session)
 
     # 4. Use Gordo client to make sure it works
     revisions = client.get_revisions()

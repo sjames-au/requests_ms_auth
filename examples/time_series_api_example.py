@@ -27,18 +27,17 @@ if __name__ == "__main__":
     # 1. Load credentials from file (never store credentials in git)!
     filename = "time_series_api_credentials.yaml"
     logger.info(f"Loading credentials from {filename}")
-    auth_config={}
+    auth_config = {}
     with open(filename, "r") as stream:
         auth_config = yaml.safe_load(stream)
-    logger.info("Loaded credentials:\n"+pprint.pformat(auth_config))
+    logger.info("Loaded credentials:\n" + pprint.pformat(auth_config))
 
     # 2.Instanciate a session with authentication dict as parameters
-    session = MsRequestsSession(auth_config = auth_config)
-    logger.info("Created session:\n"+str(session))
-    
+    session = MsRequestsSession(auth_config=auth_config)
+    logger.info("Created session:\n" + str(session))
+
     # 3. Make a call to time series api using our session
     base_url = "https://api.gateway.equinor.com/plant/timeseries/v1.5"
-    body = { "name" : "PT-13005/MeasA/PRIM", "assetId": "SFB"}
-    res = session.get(base_url, params = body)
-    logger.info("Data from time series API:\n"+pprint.pformat(res.json()))
-
+    body = {"name": "PT-13005/MeasA/PRIM", "assetId": "SFB"}
+    res = session.get(base_url, params=body)
+    logger.info("Data from time series API:\n" + pprint.pformat(res.json()))
