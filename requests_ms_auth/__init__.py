@@ -10,7 +10,6 @@ rmsa_path: str = os.path.abspath(os.path.join(os.path.dirname(__file__), "../"))
 rmsa_version_file = f"{rmsa_path}/VERSION"
 
 
-
 def _read_file(fname, strip=True):
     fn = os.path.join(os.path.dirname(os.path.abspath(__file__)), fname)
     data = ""
@@ -22,9 +21,7 @@ def _read_file(fname, strip=True):
 
 
 if pkg_resources.resource_exists(__name__, "VERSION"):
-    __version__ = (
-        pkg_resources.resource_string(__name__, "VERSION").decode("utf-8").strip()
-    )
+    __version__ = pkg_resources.resource_string(__name__, "VERSION").decode("utf-8").strip()
 elif os.path.exists(rmsa_version_file):
     __version__ = _read_file(rmsa_version_file)
 else:
