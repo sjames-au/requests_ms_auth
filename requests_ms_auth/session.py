@@ -142,7 +142,7 @@ class MsRequestsSession(requests_oauthlib.OAuth2Session):
                 j = None
                 try:
                     j = res.json()
-                except simplejson.errors.JSONDecodeError:
+                except simplejson.errors.JSONDecodeError:  # type: ignore
                     return False, f"Verification failed: Response was not json. Excerpt: '{res.text[0:100]}'..."
                 if not j:
                     return False, "Verification failed: Returned json was empty"
