@@ -1,8 +1,7 @@
 import pkg_resources
 import os
-from .session import MsRequestsSession
-
-__all__ = ["MsRequestsSession"]
+from .ms_session import MsRequestsSession
+from .ms_session_config import MsSessionConfig
 
 __version__ = "0.0.0"
 
@@ -27,3 +26,5 @@ elif os.path.exists(rmsa_version_file):
 else:
     # logger.warning("No version found")
     pass
+
+__all__ = ["MsRequestsSession", "MsSessionConfig", "__version__"]
