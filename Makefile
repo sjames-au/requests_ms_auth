@@ -50,9 +50,7 @@ build:
 
 black:
 	@echo "Ensuring code quality with black"
-	black -t py37 "${PACKAGE_DIR}"
-	black -t py37 "${TESTS_DIR}"
-	black -t py37 "${EXAMPLES_DIR}"
+	black -t py37 .
 
 flake:
 	@echo "Ensuring code quality with flake"
@@ -73,7 +71,7 @@ code-quality: black flake mypy
 
 test:
 	@echo "Testing"
-	python -m pytest -vvvv tests
+	python -m pytest --cov=requests_ms_auth -vv ${TESTS_DIR}
 
 pack:
 	@echo "Packaging"

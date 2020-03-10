@@ -16,6 +16,8 @@ import pprint
 import yaml
 
 # Set default log level to "INFO"
+from requests_ms_auth.ms_session_config import MsSessionConfig
+
 logging.basicConfig(level=logging.INFO)
 
 # Create the logger we will use
@@ -27,13 +29,12 @@ if __name__ == "__main__":
     # 1. Load credentials from file (never store credentials in git)!
     filename = "time_series_api_credentials.yaml"
     logger.info(f"Loading credentials from {filename}")
-    auth_config = {}
     with open(filename, "r") as stream:
-        auth_config = yaml.safe_load(stream)
+        auth_config = MsSessionConfig(**yaml.safe_load(stream))
     logger.info("Loaded credentials:\n" + pprint.pformat(auth_config))
 
     # 2.Instanciate a session with authentication dict as parameters
-    session = MsRequestsSession(auth_config=auth_config)
+    session = MsRequestsSession(msrs_auth_config=auth_config)
     logger.info("Created session:\n" + str(session))
 
     # 3. Make a call to time series api using our session

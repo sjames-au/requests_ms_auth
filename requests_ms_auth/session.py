@@ -1,14 +1,15 @@
 import logging
-import pprint
 from json import JSONDecodeError
-from typing import Optional, Dict, Tuple
+from typing import Dict, Optional, Tuple
 
 import adal
 import msal
 import requests
 import requests_oauthlib
 from requests.structures import CaseInsensitiveDict
+
 from requests_ms_auth.ms_backend_application_client import MsBackendApplicationClient
+from requests_ms_auth.ms_session_config import MsSessionConfig
 
 logger = logging.getLogger(__name__)
 
@@ -24,60 +25,33 @@ class MsRequestsSession(requests_oauthlib.OAuth2Session):
     msrs_aouth_header = "Authorization"
     msrs_access_token_name = "access_token"
 
-    def __init__(self, auth_config):
-        self._set_config(auth_config)
-        self.msrs_state = None
+    def __init__(self, msrs_auth_config: MsSessionConfig):
+        self.msrs_client_id = msrs_auth_config.client_id
+        self.msrs_do_adal = msrs_auth_config.do_adal
+        self.msrs_client_secret = msrs_auth_config.client_secret
+        self.msrs_resource_uri = msrs_auth_config.resource
+        self.msrs_tenant = msrs_auth_config.tenant
+        self.msrs_validate_authority = self.msrs_tenant != "adfs"
+        self.msrs_scope = msrs_auth_config.scope
+        self.msrs_verification_url = msrs_auth_config.verification_url
+        self.msrs_verification_element = msrs_auth_config.verification_element
+        self.msrs_auto_refresh_url = f"{msrs_auth_config.authority_host_url}/{self.msrs_tenant}"
         self.msrs_token = self._fetch_access_token()
         if not self.msrs_token:
-            raise Exception("Could not generate token")
-        # client=requests_oauthlib.WebApplicationClient(client_id=self.msrs_client_id, token=self.msrs_token)
+            raise Exception("Could not generate 'msrs_token'")
         self.msrs_client = MsBackendApplicationClient(
-            client_id=self.msrs_client_id,
-            token=self.msrs_token,
-            auto_refresh_url=self.msrs_auto_refresh_url,
-            auto_refresh_kwargs=self.msrs_auto_refresh_kwargs,
-            token_updater=self._token_saver,
-            scope=self.msrs_scope,
+            client_id=self.msrs_client_id, token=self.msrs_token, scope=self.msrs_scope,
         )
         logging.info(
             f"@@@ msrs: __init__(client_id={self.msrs_client_id}, auto_refresh_url={self.msrs_auto_refresh_url}, "
             f"scope={self.msrs_scope})."
         )
+
         super(MsRequestsSession, self).__init__(client=self.msrs_client, token=self.msrs_token)
+
         validation_ok, validation_error = self.verify_auth()
         if not validation_ok:
             raise Exception(validation_error)
-
-    def _set_config(self, auth_config):
-        self.msrs_auth_config = auth_config
-        self.msrs_client_id = self.msrs_auth_config.get("client_id")
-        self.msrs_do_adal = self.msrs_auth_config.get("do_adal", False)
-        if not self.msrs_client_id:
-            raise Exception("No client_id specified")
-        self.msrs_client_secret = self.msrs_auth_config.get("client_secret")
-        if not self.msrs_client_secret:
-            raise Exception("No client_secret specified")
-        self.msrs_resource_uri = self.msrs_auth_config.get("resource", "https://management.core.windows.net/")
-        if not self.msrs_resource_uri:
-            raise Exception("No resource_uri specified")
-        self.msrs_authority_host_url = self.msrs_auth_config.get(
-            "authority_host_url", "https://login.microsoftonline.com"
-        )
-        if not self.msrs_authority_host_url:
-            raise Exception("No authority_host_url specified")
-        self.msrs_tenant = self.msrs_auth_config.get("tenant", "adfs")
-        if not self.msrs_tenant:
-            raise Exception("No tenant specified")
-        self.msrs_validate_authority = self.msrs_tenant != "adfs"
-        self.msrs_scope = self.msrs_auth_config.get("scope", ["read", "write"])
-        self.msrs_verification_url = self.msrs_auth_config.get("verification_url")
-        self.msrs_verification_element = self.msrs_auth_config.get("verification_element")
-        self.msrs_auto_refresh_url = f"{self.msrs_authority_host_url}/{self.msrs_tenant}"
-        self.msrs_auto_refresh_kwargs = {
-            "client_id": self.msrs_client_id,
-            "client_secret": self.msrs_client_secret,
-            "resource": self.msrs_resource_uri,
-        }  # aka extra
 
     def _fetch_access_token(self) -> Dict:
         if self.msrs_do_adal:
@@ -140,10 +114,6 @@ class MsRequestsSession(requests_oauthlib.OAuth2Session):
             logger.error(f"Error fetching token: {e}", exc_info=True)
             logger.warning(f"NOTE: {self}")
             raise e
-
-    def _token_saver(self, token):
-        logger.debug("@@@ msrs: TOKEN SAVER SAVING:")
-        logger.info(pprint.pformat(token))
 
     def verify_auth(self) -> Tuple[bool, Optional[str]]:
         try:
@@ -271,12 +241,11 @@ class MsRequestsSession(requests_oauthlib.OAuth2Session):
     def __repr__(self):
         return f"""{self.__class__.__name__} {{
     type:                 {'ADAL' if self.msrs_do_adal else 'MSAL'}
-    client_id:            {self.msrs_client_id}
+    client_id:            [hidden]
     resource_uri:         {self.msrs_resource_uri}
     client_secret:        [hidden]
     tenant:               {self.msrs_tenant}
     validate_authority:   {self.msrs_validate_authority}
-    authority_host_url:   {self.msrs_authority_host_url}
     auto_refresh_url:     {self.msrs_auto_refresh_url}
     verification:         {self.msrs_verification_url}
         {f"for '{self.msrs_verification_element}'" if self.msrs_verification_element else ''}

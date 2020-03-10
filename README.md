@@ -98,6 +98,27 @@ make
   * [Requests](https://requests.readthedocs.io/en/master/)
   * [Requests-OAuthlib](https://requests-oauthlib.readthedocs.io/en/latest/) 
 
+### 6. Tests
+To run tests - export following ENV variables (with previously replaced values):
+```shell script
+export INTEGRATION_TENANT=tenent
+export INTEGRATION_CLIENT_ID=id
+export INTEGRATION_CLIENT_SECRET=secret
+export INTEGRATION_RESOURCE=resourse
+export INTEGRATION_AUTHORITY_HOST_URL=authority
+export INTEGRATION_LIVE_VERIFICATION_URL=verification
+```
+
+OR add env variables to Pycharn or other IDE (with previously added values):
+```text
+INTEGRATION_TENANT=;INTEGRATION_CLIENT_ID=;INTEGRATION_CLIENT_SECRET=;INTEGRATION_RESOURCE=;INTEGRATION_AUTHORITY_HOST_URL=;INTEGRATION_LIVE_VERIFICATION_URL=;
+```
+
+Then run:
+```
+make test
+```
+
 ## License
 
 Please see [LICENSE](https://github.com/equinor/requests_ms_auth/blob/master/LICENSE) file for details. requests_ms_auth is licensed under GNU AFFERO GENERAL PUBLIC LICENSE and has G-Faps.
