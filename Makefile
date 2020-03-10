@@ -60,7 +60,7 @@ mypy:
 	@echo "Ensuring code quality with mypy"
 	mypy "${PACKAGE_DIR}"
 	mypy "${TESTS_DIR}"
-	mypy "${EXAMPLES_DIR}"
+#	mypy "${EXAMPLES_DIR}"
 
 setup:
 	rm -rf requests_ms_auth/build

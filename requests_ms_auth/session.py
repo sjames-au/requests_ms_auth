@@ -85,7 +85,7 @@ class MsRequestsSession(requests_oauthlib.OAuth2Session):
                 }
             else:
                 logger.error(f"Could not get token for client {self.msrs_auto_refresh_url}")
-                raise Exception("No token aqcuired")
+                raise Exception("No token acquired")
             if not self.msrs_oathlib_token.get("access_token"):
                 logger.warning(f"Token aqcuired seems lacking")
                 raise Exception("Token aqcuired seems lacking")
@@ -117,7 +117,7 @@ class MsRequestsSession(requests_oauthlib.OAuth2Session):
                 }
             else:
                 logger.error(f"Could not get token for client {self.msrs_auto_refresh_url}")
-            return self.msrs_oathlib_token
+                raise Exception("No token acquired")
         except Exception as e:
             logger.error(f"Error fetching token: {e}", exc_info=True)
             logger.warning(f"NOTE: {self}")
