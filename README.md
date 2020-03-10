@@ -8,13 +8,6 @@ This project provides a simple [Requests](https://requests.readthedocs.io/en/mas
 
 The package is available on [PyPi](https://pypi.org/project/requests-ms-auth/) and the code is available on [github](https://github.com/equinor/requests_ms_auth).
 
-Especially this project can be used to gain easy access to services from [Equinor API gateway]( https://api.equinor.com/ ):
-
-| Service | Example code |
-|---------|-----------|
-| [Gordo](https://github.com/equinor/gordo) | [gordo_example.py](https://github.com/equinor/requests_ms_auth/blob/master/examples/gordo_example.py) |
-| [Time Series API](https://github.com/equinor/OmniaPlant/tree/master/Omnia%20Timeseries%20API) | [time_series_api_example.py](https://github.com/equinor/requests_ms_auth/blob/master/examples/time_series_api_example.py) |
-
 ## How to use
 
 ### 1. Install the package
@@ -97,6 +90,15 @@ make
 * To supply OAuth2 compatability the library depends on
   * [Requests](https://requests.readthedocs.io/en/master/)
   * [Requests-OAuthlib](https://requests-oauthlib.readthedocs.io/en/latest/) 
+
+## Examples
+
+> NOTE: These examples are made for easy access to Equinor spesific systems, but should still illustrate general usage.
+
+| Description | Example code |
+|-------------|-----------|
+| Python code to access [Time Series API](https://github.com/equinor/OmniaPlant/tree/master/Omnia%20Timeseries%20API) using session directly| [time_series_api_example.py](https://github.com/equinor/requests_ms_auth/blob/master/examples/time_series_api_example.py) |
+| Python code to access [Gordo](https://github.com/equinor/gordo) using the Gordo Client | [gordo_example.py](https://github.com/equinor/requests_ms_auth/blob/master/examples/gordo_example.py) |
 
 ### 6. Tests
 To run tests - export following ENV variables (with previously replaced values):
