@@ -1,11 +1,11 @@
 import logging
-from json import JSONDecodeError
 from typing import Dict, Optional, Tuple
 
 import adal
 import msal
 import requests
 import requests_oauthlib
+import simplejson
 from requests.structures import CaseInsensitiveDict
 
 from requests_ms_auth.ms_backend_application_client import MsBackendApplicationClient
@@ -142,7 +142,7 @@ class MsRequestsSession(requests_oauthlib.OAuth2Session):
                 j = None
                 try:
                     j = res.json()
-                except JSONDecodeError:
+                except simplejson.errors.JSONDecodeError:
                     return False, f"Verification failed: Response was not json. Excerpt: '{res.text[0:100]}'..."
                 if not j:
                     return False, "Verification failed: Returned json was empty"
