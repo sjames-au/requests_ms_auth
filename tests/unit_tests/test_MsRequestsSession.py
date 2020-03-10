@@ -4,7 +4,6 @@ import logging
 import os
 import pytest
 import requests_ms_auth
-import sys
 import typing
 import json
 import requests
@@ -177,7 +176,3 @@ def todo_test_all(auth_config_live_adal):
             req = requests.Request("GET", verification_url)
             res = session.send(req.prepare())
             assert_json_response(res, verification_element)
-
-
-def test_true():
-    assert True == True

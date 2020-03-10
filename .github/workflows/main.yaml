@@ -17,7 +17,7 @@ jobs:
     strategy:
       matrix:
         os: [ubuntu-latest, macos-latest]
-        python-version: [3.7, 3.8, 3.6]
+        python-version: [3.7, 3.8]
         exclude:
          - os: macos-latest
            python-version: 3.8
@@ -43,6 +43,13 @@ jobs:
     - name: Test code
       run: |
         make setup test
+      env:
+        INTEGRATION_TENANT: ${{ secrets.INTEGRATION_TENANT }}
+        INTEGRATION_CLIENT_ID: ${{ secrets.INTEGRATION_CLIENT_ID }}
+        INTEGRATION_CLIENT_SECRET: ${{ secrets.INTEGRATION_CLIENT_SECRET }}
+        INTEGRATION_RESOURCE: ${{ secrets.INTEGRATION_RESOURCE }}
+        INTEGRATION_AUTHORITY_HOST_URL: ${{ secrets.INTEGRATION_AUTHORITY_HOST_URL }}
+        INTEGRATION_LIVE_VERIFICATION_URL: ${{ secrets.INTEGRATION_LIVE_VERIFICATION_URL }}
   upload:
     needs: [test]
     runs-on: ubuntu-latest
