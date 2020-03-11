@@ -1,5 +1,5 @@
 import logging
-from typing import Dict, Optional, Tuple
+from typing import Dict, Optional, Tuple, Union
 
 import adal
 import msal
@@ -25,7 +25,11 @@ class MsRequestsSession(requests_oauthlib.OAuth2Session):
     msrs_aouth_header = "Authorization"
     msrs_access_token_name = "access_token"
 
-    def __init__(self, msrs_auth_config: MsSessionConfig):
+    def __init__(self, msrs_auth_config: Union[MsSessionConfig, dict]):
+        if not isinstance(msrs_auth_config, MsSessionConfig):  # TODO remove this in the future versions
+            logger.warning("Using of 'msrs_auth_config' as dict will be deprecated in the next versions.")
+            msrs_auth_config = MsSessionConfig(**msrs_auth_config)
+
         self.msrs_client_id = msrs_auth_config.client_id
         self.msrs_do_adal = msrs_auth_config.do_adal
         self.msrs_client_secret = msrs_auth_config.client_secret
