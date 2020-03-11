@@ -46,8 +46,8 @@ class MsRequestsSession(requests_oauthlib.OAuth2Session):
         self.msrs_client = MsBackendApplicationClient(
             client_id=self.msrs_client_id, token=self.msrs_token, scope=self.msrs_scope,
         )
-        logging.info(
-            f"@@@ msrs: __init__(client_id={self.msrs_client_id}, auto_refresh_url={self.msrs_auto_refresh_url}, "
+        logging.debug(
+            f"__init__(client_id={self.msrs_client_id}, auto_refresh_url={self.msrs_auto_refresh_url}, "
             f"scope={self.msrs_scope})."
         )
 
@@ -130,7 +130,7 @@ class MsRequestsSession(requests_oauthlib.OAuth2Session):
 
     def verify_auth(self) -> Tuple[bool, Optional[str]]:
         if self.msrs_verification_url:
-            logger.info("@@@ msrs: Verification URL specified, performing http verification")
+            logger.debug("Verification URL specified, performing http verification")
             res = self.get(self.msrs_verification_url)
             if res is None:
                 return False, "Verification failed: No response object returned"
@@ -140,7 +140,7 @@ class MsRequestsSession(requests_oauthlib.OAuth2Session):
                 except requests.exceptions.HTTPError:
                     return False, f"Verification failed: Request returned HTTP {res.status_code} ({res.reason})"
             if self.msrs_verification_element:
-                logger.debug("@@@ msrs: Verification element specified, performing json result verification")
+                logger.debug("Verification element specified, performing json result verification")
                 if not res.text:
                     return False, "Verification failed: Request returned empty response"
                 j = None
@@ -158,14 +158,14 @@ class MsRequestsSession(requests_oauthlib.OAuth2Session):
                         + f"found in response.  Excerpt: '{res.text[0:100]}...'",
                     )
             else:
-                logger.debug(f"@@@ msrs: No verification element specified, skipping json result verification")
+                logger.debug(f"No verification element specified, skipping json result verification")
         else:
-            logger.debug(f"@@@ msrs: No verification URL specified, skipping http verification")
+            logger.debug(f"No verification URL specified, skipping http verification")
         # Success
         return True, None
 
     def prepare_request(self, request):
-        logging.debug(f"@@@ msrs: prepare_request(method={request.method}, url='{request.url}').")
+        logging.debug(f"prepare_request(method={request.method}, url='{request.url}').")
         return super(MsRequestsSession, self).prepare_request(request)
 
     def request(
@@ -177,7 +177,7 @@ class MsRequestsSession(requests_oauthlib.OAuth2Session):
             if 'sent' method will be called directly, this method will be invoked if there's no 'token' in the headers
             'access token' validity will be checked/renewed as well
         """
-        logging.debug(f"@@@ msrs: request(method={method}, url='{url}').")
+        logging.debug(f"request(method={method}, url='{url}').")
         self.access_token_check_and_renew(headers)
 
         return super(MsRequestsSession, self).request(
@@ -198,7 +198,7 @@ class MsRequestsSession(requests_oauthlib.OAuth2Session):
             if there's no auth header or it's empty -> use inherited from oauth2 functionality to add token on requests
             'access token' validity will be checked/renewed as well
         """
-        logging.debug(f"@@@ msrs: send(method={request.method}, url='{request.url}').")
+        logging.debug(f"send(method={request.method}, url='{request.url}').")
         self.access_token_check_and_renew(request.headers)
 
         try:
@@ -210,7 +210,7 @@ class MsRequestsSession(requests_oauthlib.OAuth2Session):
                 response = self.request(
                     method=request.method, url=request.url, data=request.body, headers=request.headers, **kwargs,
                 )
-            logging.debug(f"@@@ msrs: Response head follows: -----------------------")
+            logging.debug(f"Response head follows: -----------------------")
             logging.debug(response.content[0:200])
             return response
         except requests.exceptions.NewConnectionError as e:
@@ -254,7 +254,7 @@ class MsRequestsSession(requests_oauthlib.OAuth2Session):
             pass
 
     def close(self):
-        logging.debug(f"@@@ msrs: close().")
+        logging.debug(f"close().")
         return super(MsRequestsSession, self).close()
 
     def __repr__(self):
