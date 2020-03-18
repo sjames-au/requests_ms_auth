@@ -12,8 +12,9 @@ class MsSessionConfig:
         client_secret: client secret
         verification_url: you service url to call
         verification_element: key in json that should be returned in the response on the first json "level"
-        verification_defer: when verification_url is specified the default is to perform verification in constructor.
-                            verification_defer = True will skip verification even when url is specified
+        verify_on_startup: when verification_url is specified the default is to perform verification in constructor.
+                            verify_on_startup = False will skip verification even when url is specified. You can still
+                            perform verification manually with the verify() method.
         do_adal: if True -> use 'adal' method to fetch access token; otherwise use 'MSAL'
         resource: uri/identifier of the resource to which you're going to make calls to
         authority_host_url: base authority to issuing the token
@@ -25,7 +26,7 @@ class MsSessionConfig:
     client_secret: str
     verification_url: Optional[str] = None
     verification_element: Optional[str] = None
-    verification_defer = False
+    verify_on_startup = True
     do_adal: bool = False
     resource: str = "https://management.core.windows.net/"
     authority_host_url: str = "https://login.microsoftonline.com"

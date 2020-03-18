@@ -38,7 +38,7 @@ class MsRequestsSession(requests_oauthlib.OAuth2Session):
         self.msrs_validate_authority = self.msrs_tenant != "adfs"
         self.msrs_scope = msrs_auth_config.scope
         self.msrs_verification_url = msrs_auth_config.verification_url
-        self.msrs_verification_defer = msrs_auth_config.verification_defer
+        self.msrs_verify_on_startup = msrs_auth_config.verify_on_startup
         self.msrs_verification_element = msrs_auth_config.verification_element
         self.msrs_auto_refresh_url = f"{msrs_auth_config.authority_host_url}/{self.msrs_tenant}"
         self.msrs_token = self._fetch_access_token()
@@ -54,7 +54,7 @@ class MsRequestsSession(requests_oauthlib.OAuth2Session):
 
         super(MsRequestsSession, self).__init__(client=self.msrs_client, token=self.msrs_token)
 
-        if not self.msrs_verification_defer:
+        if not self.msrs_verify_on_startup:
             validation_ok, validation_error = self.verify_auth()
             if not validation_ok:
                 raise Exception(validation_error)
