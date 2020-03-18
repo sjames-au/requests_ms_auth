@@ -5,9 +5,7 @@ import pytest
 from mock import patch
 
 
-@pytest.mark.parametrize(
-    "increase_to_time_now,expected", [(3586, True), (3575, False), (1, False)],
-)
+@pytest.mark.parametrize("increase_to_time_now,expected", [(3586, True), (3575, False), (1, False)])
 def test_is_access_token_expired(increase_to_time_now: int, expected: bool, backend_client):
     """Explanation: '3586' ~ '59,76667' minutes, so we increase time() with it and check for expiration"""
     with patch("requests_ms_auth.ms_backend_application_client.time.time") as time_mock:

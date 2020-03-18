@@ -75,7 +75,7 @@ BAD_TOKEN: typing.Dict[str, typing.Union[str, int]] = {}
         # Single key provided, returns `oath` defaults for other keys
         (
             {"accessToken": "dummy-token"},
-            {"access_token": "dummy-token", "refresh_token": "", "token_type": "Bearer", "expires_in": 0,},
+            {"access_token": "dummy-token", "refresh_token": "", "token_type": "Bearer", "expires_in": 0},
         ),
         # Empty token provided, get `oath` token of `None`
         (BAD_TOKEN, None),
