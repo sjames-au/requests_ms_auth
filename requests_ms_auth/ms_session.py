@@ -15,7 +15,7 @@ logger = logging.getLogger(__name__)
 
 
 class MsRequestsSession(requests_oauthlib.OAuth2Session):
-    """A wrapper for OAuth2Session that also implements adal token fetch.
+    """A wrapper for OAuth2Session that also implements adal/msal token fetch.
 
     See https://requests.readthedocs.io/en/latest/_modules/requests/sessions/#Session
     See https://requests-oauthlib.readthedocs.io/en/latest/api.html#oauth-2-0-session
@@ -38,13 +38,14 @@ class MsRequestsSession(requests_oauthlib.OAuth2Session):
         self.msrs_validate_authority = self.msrs_tenant != "adfs"
         self.msrs_scope = msrs_auth_config.scope
         self.msrs_verification_url = msrs_auth_config.verification_url
+        self.msrs_verification_defer = msrs_auth_config.verification_defer
         self.msrs_verification_element = msrs_auth_config.verification_element
         self.msrs_auto_refresh_url = f"{msrs_auth_config.authority_host_url}/{self.msrs_tenant}"
         self.msrs_token = self._fetch_access_token()
         if not self.msrs_token:
             raise Exception("Could not generate 'msrs_token'")
         self.msrs_client = MsBackendApplicationClient(
-            client_id=self.msrs_client_id, token=self.msrs_token, scope=self.msrs_scope,
+            client_id=self.msrs_client_id, token=self.msrs_token, scope=self.msrs_scope
         )
         logging.debug(
             f"__init__(client_id={self.msrs_client_id}, auto_refresh_url={self.msrs_auto_refresh_url}, "
@@ -53,9 +54,10 @@ class MsRequestsSession(requests_oauthlib.OAuth2Session):
 
         super(MsRequestsSession, self).__init__(client=self.msrs_client, token=self.msrs_token)
 
-        validation_ok, validation_error = self.verify_auth()
-        if not validation_ok:
-            raise Exception(validation_error)
+        if not self.msrs_verification_defer:
+            validation_ok, validation_error = self.verify_auth()
+            if not validation_ok:
+                raise Exception(validation_error)
 
     def _fetch_access_token(self) -> Dict:
         if self.msrs_do_adal:
@@ -104,7 +106,7 @@ class MsRequestsSession(requests_oauthlib.OAuth2Session):
         self.msrs_oathlib_token = None
         try:
             context = adal.AuthenticationContext(
-                authority=self.msrs_auto_refresh_url, validate_authority=self.msrs_validate_authority, api_version=None,
+                authority=self.msrs_auto_refresh_url, validate_authority=self.msrs_validate_authority, api_version=None
             )
             self.msrs_ms_token = (
                 context.acquire_token_with_client_credentials(
@@ -169,7 +171,7 @@ class MsRequestsSession(requests_oauthlib.OAuth2Session):
         return super(MsRequestsSession, self).prepare_request(request)
 
     def request(
-        self, method, url, data=None, headers=None, withhold_token=False, client_id=None, client_secret=None, **kwargs,
+        self, method, url, data=None, headers=None, withhold_token=False, client_id=None, client_secret=None, **kwargs
     ):
         """This method will be called each time smth should be sent
 
@@ -208,7 +210,7 @@ class MsRequestsSession(requests_oauthlib.OAuth2Session):
             else:
                 # make another call to get token into the header
                 response = self.request(
-                    method=request.method, url=request.url, data=request.body, headers=request.headers, **kwargs,
+                    method=request.method, url=request.url, data=request.body, headers=request.headers, **kwargs
                 )
             logging.debug(f"Response head follows: -----------------------")
             logging.debug(response.content[0:200])
@@ -220,9 +222,7 @@ class MsRequestsSession(requests_oauthlib.OAuth2Session):
             logger.error(f"HTTP STATUS CODE WAS: {e}")
             raise e
         except Exception as e:
-            logger.error(
-                f"Could not perform request(method={request.method}, url='{request.url}'): {e}", exc_info=True,
-            )
+            logger.error(f"Could not perform request(method={request.method}, url='{request.url}'): {e}", exc_info=True)
             raise e
 
     def access_token_check_and_renew(self, headers: Optional[CaseInsensitiveDict] = None) -> None:
