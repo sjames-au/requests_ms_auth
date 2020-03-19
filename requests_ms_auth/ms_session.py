@@ -54,7 +54,7 @@ class MsRequestsSession(requests_oauthlib.OAuth2Session):
 
         super(MsRequestsSession, self).__init__(client=self.msrs_client, token=self.msrs_token)
 
-        if not self.msrs_verify_on_startup:
+        if self.msrs_verify_on_startup:
             validation_ok, validation_error = self.verify_auth()
             if not validation_ok:
                 raise Exception(validation_error)
