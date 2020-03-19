@@ -26,7 +26,7 @@ class MsSessionConfig:
     client_secret: str
     verification_url: Optional[str] = None
     verification_element: Optional[str] = None
-    verify_on_startup = True
+    verify_on_startup: bool = True
     do_adal: bool = False
     resource: str = "https://management.core.windows.net/"
     authority_host_url: str = "https://login.microsoftonline.com"
