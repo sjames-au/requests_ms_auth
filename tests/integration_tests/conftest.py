@@ -12,6 +12,8 @@ INTEGRATION_CLIENT_SECRET = environ["INTEGRATION_CLIENT_SECRET"]
 INTEGRATION_RESOURCE = environ["INTEGRATION_RESOURCE"]
 INTEGRATION_AUTHORITY_HOST_URL = environ["INTEGRATION_AUTHORITY_HOST_URL"]
 INTEGRATION_LIVE_VERIFICATION_URL = environ["INTEGRATION_LIVE_VERIFICATION_URL"]
+INTEGRATION_LIVE_VERIFICATION_ELEMENT = environ["INTEGRATION_LIVE_VERIFICATION_ELEMENT"]
+
 
 AUTH = MsSessionConfig(
     resource=INTEGRATION_RESOURCE,
@@ -24,6 +26,10 @@ AUTH = MsSessionConfig(
 
 
 @pytest.fixture(scope="function")
-def new_session():
-    session_config = deepcopy(AUTH)
+def session_config() -> MsSessionConfig:
+    return deepcopy(AUTH)
+
+
+@pytest.fixture(scope="function")
+def new_session(session_config) -> MsRequestsSession:
     return MsRequestsSession(msrs_auth_config=session_config)
