@@ -1,4 +1,5 @@
 import logging
+from copy import deepcopy
 from typing import Dict, Optional, Tuple, Union
 
 import adal
@@ -37,6 +38,7 @@ class MsRequestsSession(requests_oauthlib.OAuth2Session):
         self.msrs_tenant = msrs_auth_config.tenant
         self.msrs_validate_authority = self.msrs_tenant != "adfs"
         self.msrs_scope = msrs_auth_config.scope
+        self.auto_adding_headers = msrs_auth_config.auto_adding_headers
         self.msrs_verification_url = msrs_auth_config.verification_url
         self.msrs_verify_on_startup = msrs_auth_config.verify_on_startup
         self.msrs_verification_element = msrs_auth_config.verification_element
@@ -180,6 +182,9 @@ class MsRequestsSession(requests_oauthlib.OAuth2Session):
             'access token' validity will be checked/renewed as well
         """
         logging.debug(f"request(method={method}, url='{url}').")
+
+        headers = self.add_auto_headers(headers)
+
         self.access_token_check_and_renew(headers)
 
         return super(MsRequestsSession, self).request(
@@ -202,6 +207,8 @@ class MsRequestsSession(requests_oauthlib.OAuth2Session):
         """
         logging.debug(f"send(method={request.method}, url='{request.url}').")
         self.access_token_check_and_renew(request.headers)
+
+        request.headers = self.add_auto_headers(request.headers)
 
         try:
             if request.headers is not None and request.headers.get(self.msrs_aouth_header, False):
@@ -252,6 +259,24 @@ class MsRequestsSession(requests_oauthlib.OAuth2Session):
             del headers[self.msrs_aouth_header]  # type: ignore
         except (KeyError, TypeError):
             pass
+
+    def add_auto_headers(self, headers: Optional[CaseInsensitiveDict] = None) -> Optional[CaseInsensitiveDict]:
+        """Force to add 'auto_adding_headers' to the request. Might be needed for an auth.
+
+        Args:
+            headers: Request headers.
+
+        Returns:
+            Updated headers if 'auto_adding_headers' exists, otherwise same headers that were passed to the func.
+        """
+        if not self.auto_adding_headers:
+            return headers
+
+        if not headers:
+            headers = deepcopy(self.auto_adding_headers)
+        else:
+            headers.update(self.auto_adding_headers)
+        return headers
 
     def close(self):
         logging.debug(f"close().")
