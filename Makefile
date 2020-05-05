@@ -50,7 +50,7 @@ build:
 
 black:
 	@echo "Ensuring code quality with black"
-	black -t py37 .
+	black .
 
 flake:
 	@echo "Ensuring code quality with flake"
@@ -60,7 +60,7 @@ mypy:
 	@echo "Ensuring code quality with mypy"
 	mypy "${PACKAGE_DIR}"
 	mypy "${TESTS_DIR}"
-#	mypy "${EXAMPLES_DIR}"
+	# mypy "${EXAMPLES_DIR}" # TODO fix this
 
 setup:
 	rm -rf requests_ms_auth/build
