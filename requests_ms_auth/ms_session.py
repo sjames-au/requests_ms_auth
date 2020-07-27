@@ -8,6 +8,7 @@ import requests
 import requests_oauthlib
 import simplejson
 from requests.structures import CaseInsensitiveDict
+from urllib3.exceptions import NewConnectionError
 
 from requests_ms_auth.ms_backend_application_client import MsBackendApplicationClient
 from requests_ms_auth.ms_session_config import MsSessionConfig
@@ -95,7 +96,7 @@ class MsRequestsSession(requests_oauthlib.OAuth2Session):
                 logger.error(f"Could not get token for client {self.msrs_auto_refresh_url}")
                 raise Exception("No token acquired")
             if not self.msrs_oathlib_token.get("access_token"):
-                logger.warning(f"Token aqcuired seems lacking")
+                logger.warning("Token aqcuired seems lacking")
                 raise Exception("Token aqcuired seems lacking")
         except Exception as e:
             logger.error(f"Error fetching token: {e}", exc_info=True)
@@ -162,9 +163,9 @@ class MsRequestsSession(requests_oauthlib.OAuth2Session):
                         + f"found in response.  Excerpt: '{res.text[0:100]}...'",
                     )
             else:
-                logger.debug(f"No verification element specified, skipping json result verification")
+                logger.debug("No verification element specified, skipping json result verification")
         else:
-            logger.debug(f"No verification URL specified, skipping http verification")
+            logger.debug("No verification URL specified, skipping http verification")
         # Success
         return True, None
 
@@ -219,10 +220,10 @@ class MsRequestsSession(requests_oauthlib.OAuth2Session):
                 response = self.request(
                     method=request.method, url=request.url, data=request.body, headers=request.headers, **kwargs
                 )
-            logging.debug(f"Response head follows: -----------------------")
+            logging.debug("Response head follows: -----------------------")
             logging.debug(response.content[0:200])
             return response
-        except requests.exceptions.NewConnectionError as e:
+        except NewConnectionError as e:
             logger.error(f"Could not connect (method={request.method}, url='{request.url}'): {e}")
             raise e
         except requests.exceptions.HTTPError as e:
@@ -279,7 +280,7 @@ class MsRequestsSession(requests_oauthlib.OAuth2Session):
         return headers
 
     def close(self):
-        logging.debug(f"close().")
+        logging.debug("close().")
         return super(MsRequestsSession, self).close()
 
     def __repr__(self):
