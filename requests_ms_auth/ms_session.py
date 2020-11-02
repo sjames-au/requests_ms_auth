@@ -156,7 +156,8 @@ class MsRequestsSession(requests_oauthlib.OAuth2Session):
                 if not j:
                     return False, "Verification failed: Returned json was empty"
 
-                if not j.get(self.msrs_verification_element, False):
+                verification_element = j.get(self.msrs_verification_element, None)
+                if verification_element is None:
                     return (
                         False,
                         f"Verification failed: Expected json element '{self.msrs_verification_element}' not "
