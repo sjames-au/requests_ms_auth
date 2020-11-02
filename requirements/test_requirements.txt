@@ -13,7 +13,6 @@ coverage==5.0.3           # via pytest-cov
 entrypoints==0.3          # via flake8
 filelock==3.0.12          # via pytest-mypy
 flake8==3.7.9             # via -r requirements/temp_requirements.in
-importlib-metadata==1.5.0  # via pluggy, pytest
 mccabe==0.6.1             # via flake8
 mock==3.0.5               # via -r requirements/temp_requirements.in
 more-itertools==8.2.0     # via pytest
@@ -33,9 +32,8 @@ pytest-mypy==0.5.0        # via -r requirements/temp_requirements.in
 pytest==4.6.9             # via -r requirements/temp_requirements.in, pytest-cov, pytest-flakes, pytest-mypy
 pyyaml==5.3               # via -r requirements/temp_requirements.in
 regex==2020.2.20          # via black
-six==1.14.0               # via -c requirements/requirements.txt, mock, packaging, pip-tools, pytest
+six==1.15.0               # via -c requirements/requirements.txt, mock, packaging, pip-tools, pytest
 toml==0.10.0              # via black
 typed-ast==1.4.1          # via black, mypy
 typing-extensions==3.7.4.1  # via mypy
 wcwidth==0.1.8            # via pytest
-zipp==3.0.0               # via importlib-metadata
