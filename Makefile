@@ -25,15 +25,15 @@ info:
 	@echo "TESTS_DIR=${TESTS_DIR}"
 	@echo "EXAMPLES_DIR=${EXAMPLES_DIR}"
 
-require:
+compose_requirements:
 	pip install --upgrade pip
-	pip uninstall requests_ms_auth -y
 	pip install --upgrade pip-tools
-	cat requirements/requirements.in | sort -u > requirements/temp_requirements.in
-	pip-compile --output-file=requirements/requirements.txt requirements/temp_requirements.in
-	cat requirements/requirements.in, requirements/test_requirements.in | sort -u > requirements/temp_requirements.in
-	pip-compile --output-file=requirements/test_requirements.txt requirements/temp_requirements.in
-	[ ! -e requirements/temp_requirements.in ] || rm requirements/temp_requirements.in
+	pip-compile --upgrade --output-file=requirements/requirements.txt requirements/requirements.in
+	pip-compile --upgrade --output-file=requirements/test_requirements.txt requirements/test_requirements.in
+
+install_app_requirements:  ## install requirements for app and tests run
+	pip install --upgrade pip
+	pip install --upgrade pip-tools
 	pip install -r requirements/requirements.txt
 	pip install -r requirements/test_requirements.txt
 
@@ -88,14 +88,15 @@ help:
 	@echo ""
 	@echo " Targets:"
 	@echo ""
-	@echo " + make help             Show this help"
-	@echo " + make info             Show environment info"
-	@echo " + make require          Update requirements pinning"
-	@echo " + make prep             Prepare development environment"
-	@echo " + make setup            Install local verion of package"
-	@echo " + make code-quality     Run code quality tools"
-	@echo " + make build            Build the package."
-	@echo " + make test             Run tests."
-	@echo " + make pack             Package the build into a PyPi package"
-	@echo " + make push             Push the package to PyPi"
+	@echo " + make help             		Show this help"
+	@echo " + make info             		Show environment info"
+	@echo " + make compose_requirements     Update requirements pinning"
+	@echo " + make install_app_requirements     Install requirements for app and tests run"
+	@echo " + make prep             		Prepare development environment"
+	@echo " + make setup            		Install local verion of package"
+	@echo " + make code-quality     		Run code quality tools"
+	@echo " + make build            		Build the package."
+	@echo " + make test             		Run tests."
+	@echo " + make pack             		Package the build into a PyPi package"
+	@echo " + make push             		Push the package to PyPi"
 	@echo ""

@@ -1,5 +1,5 @@
-adal~=1.2
-msal~=1.1
+adal==1.*
+msal==1.*
 requests>=2.0
-requests_oauthlib~=1.2
-simplejson~=3.17
+requests_oauthlib==1.*
+simplejson==3.*

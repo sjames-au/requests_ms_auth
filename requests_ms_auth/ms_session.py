@@ -60,7 +60,7 @@ class MsRequestsSession(requests_oauthlib.OAuth2Session):
         if self.msrs_verify_on_startup:
             validation_ok, validation_error = self.verify_auth()
             if not validation_ok:
-                raise Exception(validation_error)
+                raise Exception(f"Validation error: '{validation_error}' for '{self.msrs_verification_url}'")
 
     def _fetch_access_token(self) -> Dict:
         if self.msrs_do_adal:
