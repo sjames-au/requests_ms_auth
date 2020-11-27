@@ -19,7 +19,7 @@ class MsBackendApplicationClient(oauthlib.oauth2.BackendApplicationClient):
             True: if token expired
             False: if token not expired
         """
-        token_expiration_time_correction = 15  # in seconds
+        token_expiration_time_correction = 60  # in seconds
 
         if self._expires_at and (self._expires_at - token_expiration_time_correction) < time.time():
             logger.debug("Token has expired.")
