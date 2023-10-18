@@ -4,19 +4,46 @@
 #
 #    pip-compile --output-file=requirements/requirements.txt requirements/requirements.in
 #
-adal==1.2.5               # via -r requirements/requirements.in
-certifi==2020.11.8        # via requests
-cffi==1.14.3              # via cryptography
-chardet==3.0.4            # via requests
-cryptography==3.2.1       # via adal, msal, pyjwt
-idna==2.10                # via requests
-msal==1.6.0               # via -r requirements/requirements.in
-oauthlib==3.1.0           # via requests-oauthlib
-pycparser==2.20           # via cffi
-pyjwt[crypto]==1.7.1      # via adal, msal
-python-dateutil==2.8.1    # via adal
-requests-oauthlib==1.3.0  # via -r requirements/requirements.in
-requests==2.25.0          # via -r requirements/requirements.in, adal, msal, requests-oauthlib
-simplejson==3.17.2        # via -r requirements/requirements.in
-six==1.15.0               # via cryptography, python-dateutil
-urllib3==1.26.2           # via requests
+adal==1.2.5
+    # via -r requirements.in
+certifi==2020.11.8
+    # via requests
+cffi==1.14.3
+    # via cryptography
+chardet==3.0.4
+    # via requests
+cryptography==3.2.1
+    # via
+    #   adal
+    #   msal
+    #   pyjwt
+idna==2.10
+    # via requests
+msal==1.6.0
+    # via -r requirements.in
+oauthlib==3.1.0
+    # via requests-oauthlib
+pycparser==2.20
+    # via cffi
+pyjwt[crypto]==1.7.1
+    # via
+    #   adal
+    #   msal
+python-dateutil==2.8.1
+    # via adal
+requests==2.25.0
+    # via
+    #   -r requirements.in
+    #   adal
+    #   msal
+    #   requests-oauthlib
+requests-oauthlib==1.3.0
+    # via -r requirements.in
+simplejson==3.17.2
+    # via -r requirements.in
+six==1.15.0
+    # via
+    #   cryptography
+    #   python-dateutil
+urllib3==1.26.18
+    # via requests
